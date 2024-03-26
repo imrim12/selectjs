@@ -34,13 +34,32 @@
       </div>
     </div>
     <script type="module">
-      import { select } from './src/index'
-      
-      const input$ = document.querySelector('input')
-      const textarea$ = document.querySelector('textarea')
-      const contenteditable$ = document.querySelector('[contenteditable]')
-      
-      select(contenteditable$, { start: 15, end: 18, keep: true })
+      import { createApp, ref, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+      import { setSelection } from './src/index'
+
+      function waitFor(time = 0) {
+        return new Promise((r) => setTimeout(r, time))
+      }
+
+      createApp({
+        setup() {
+          const message = ref('Hello vue!')
+          
+          onMounted(async () => {
+            const input$ = document.querySelector('input')
+            const textarea$ = document.querySelector('textarea')
+            const contenteditable$ = document.querySelector('[contenteditable]')
+
+            setSelection(input$, { start: 0, end: 5 })
+            await waitFor(2000)
+            setSelection(textarea$, { start: 0, end: 5 })
+            await waitFor(2000)
+            setSelection(contenteditable$, { start: 1, end: 6, keep: true })
+          })
+
+          return {}
+        }
+      }).mount('#app')
     </script>
   </body>
 </html>
