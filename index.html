@@ -59,14 +59,14 @@
             setHighlight(selectionInputRect.children)
 
             wait && await waitFor(3000)
-            
+
             setSelection(textarea$, { start: 0, end: 5 })
             wait && await waitFor(1000)
             const selectionTextareaRect = getSelectionRect(textarea$)
             setHighlight(selectionTextareaRect.children)
 
             wait && await waitFor(3000)
-            
+
             setSelection(contenteditable$, { start: 10, end: 200, keep: true })
             wait && await waitFor(1000)
             const selectionContenteditableRect = getSelectionRect(contenteditable$)
