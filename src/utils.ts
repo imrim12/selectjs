@@ -28,9 +28,10 @@ export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaratio
   }
 
   newEl.style.boxSizing = 'border-box'
-  newEl.style.backgroundColor = 'yellow'
-  newEl.style.color = 'black'
-  newEl.style.opacity = '0.5'
+  newEl.style.visibility = 'hidden'
+  // newEl.style.backgroundColor = 'transparent'
+  // newEl.style.color = 'transparent'
+  // newEl.style.opacity = '0'
 
   newEl.style.position = 'fixed'
   newEl.style.top = `${elRect.top}px`
