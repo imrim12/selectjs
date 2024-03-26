@@ -4,7 +4,7 @@ import { getSelection } from './get';
 import { setSelection } from './set';
 
 export interface KeepSelectionOptions {
-  stopIfSelectEmpty: boolean
+  stopIfSelectEmpty?: boolean
 }
 
 /**
