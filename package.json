@@ -1,7 +1,27 @@
 {
   "name": "@selectjs/core",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.1",
+  "author": "Nguyễn Hữu Nguyên Ý <nguyenhuunguyeny.ny@gmail.com>",
+  "homepage": "https://github.com/imrim12/selectjs",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/imrim12/selectjs.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    }
+  },
+  "main": "./dist/core.cjs",
+  "module": "./dist/core.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -9,7 +29,8 @@
   },
   "devDependencies": {
     "typescript": "^5.2.2",
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^3.7.3"
   },
   "dependencies": {
     "defu": "^6.1.4"
