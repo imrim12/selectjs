@@ -2,6 +2,7 @@ import defu from 'defu'
 
 import { isInputOrTextarea } from './utils'
 import { keepSelection } from './keep'
+import { defineSelectable } from './define'
 
 export interface SetSelectionOptions {
   start: number,
@@ -14,30 +15,42 @@ export interface SetSelectionResult {
   stopKeeping: () => void
 }
 
-export function setSelectionInputOrTextareaElement(element: HTMLInputElement | HTMLTextAreaElement, options: Omit<SetSelectionOptions, 'keep'>) {
-  element.focus()
+export function setSelectionInputOrTextareaElement(element: HTMLInputElement | HTMLTextAreaElement, options?: SetSelectionOptions) {
+  const _options = defu(options, {
+    keep: false
+  })
 
-  element.setSelectionRange(options.start, options.end)
-  
-  return element.value.slice(options.start, options.end)
+  const _element = defineSelectable(element, _options)
+
+  _element.focus()
+
+  _element.setSelectionRange(_options.start, _options.end)
+
+  return _element.value.slice(_options.start, _options.end)
 }
 
-export function setSelectionContenteditableElement(element: HTMLElement, options: Omit<SetSelectionOptions, 'keep'>) {
-  element.focus()
+export function setSelectionContenteditableElement(element: HTMLElement, options?: SetSelectionOptions) {
+  const _options = defu(options, {
+    keep: false
+  })
+
+  const _element = defineSelectable(element, _options)
+
+  _element.focus()
 
   const selection = window.getSelection();
-  
-  if (selection && element.firstChild) {
+
+  if (selection && _element.firstChild) {
     const range = document.createRange();
-    range.setStart(element.firstChild, options.start);
-    range.setEnd(element.firstChild, options.end);
+    range.setStart(_element.firstChild, _options.start);
+    range.setEnd(_element.firstChild, _options.end);
 
     selection.removeAllRanges();
     selection.addRange(range);
 
     return selection.toString()
   }
-  
+
   return ''
 }
 
@@ -45,20 +58,23 @@ export function setSelection(element: HTMLElement, options: SetSelectionOptions)
   const _options = defu(options, {
     keep: false
   })
+
+  const _element = defineSelectable(element, options)
+
   let selectedText = ''
 
-  element.focus()
+  _element.focus()
 
-  if (isInputOrTextarea(element)) {
-    selectedText = setSelectionInputOrTextareaElement(element as HTMLInputElement | HTMLTextAreaElement, { start: _options.start, end: _options.end })
+  if (isInputOrTextarea(_element)) {
+    selectedText = setSelectionInputOrTextareaElement(_element as HTMLInputElement | HTMLTextAreaElement, { start: _options.start, end: _options.end })
   } else {
-    selectedText = setSelectionContenteditableElement(element, { start: _options.start, end: _options.end })
+    selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end })
   }
 
   let stopKeeping = () => {}
 
   if (_options.keep) {
-    stopKeeping = keepSelection(element).stop
+    stopKeeping = keepSelection(_element).stop
   }
 
   return {

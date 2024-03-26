@@ -1,3 +1,5 @@
+export * from './define'
+
 export * from './get'
 
 export * from './highlight'
