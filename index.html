@@ -7,7 +7,40 @@
     <title>Vite + TS</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="app">
+      <h1>SelectJS playground</h1>
+      <div>
+        <label>
+          Input:
+          <input type="text" value="Hello World from input" />
+        </label>
+      </div>
+      <div>
+        <label>
+          Textarea:
+          <textarea>Hello World from textarea</textarea>
+        </label>
+      </div>
+      <div>
+        <label>
+          Editor with contenteditable:
+          <div contenteditable style="max-width: 400px">
+            Hello World from contenteditable Lorem ipsum dolor sit amet
+            consectetur adipisicing elit. Dolorum, neque id saepe similique
+            libero, accusantium est sed dolore itaque labore esse architecto,
+            repellendus dolores excepturi dolor. Ex quos voluptates accusantium.
+          </div>
+        </label>
+      </div>
+    </div>
+    <script type="module">
+      import { select } from './src/index'
+      
+      const input$ = document.querySelector('input')
+      const textarea$ = document.querySelector('textarea')
+      const contenteditable$ = document.querySelector('[contenteditable]')
+      
+      select(contenteditable$, { start: 15, end: 18, keep: true })
+    </script>
   </body>
 </html>
