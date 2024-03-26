@@ -100,29 +100,37 @@ export function getSelectionRect(element?: HTMLElement): GetSelectionRectResult 
 
     const _inputOrTextareaSelection = getSelectionInputOrTextarea(_inputOrTextareaElement)
 
+    selectedStart = _inputOrTextareaSelection.start
+    selectedEnd = _inputOrTextareaSelection.end
+
     shadowEl = shadowElement(_inputOrTextareaElement)
     shadowEl.contentEditable = 'true'
     document.body.appendChild(shadowEl)
 
     setSelectionContenteditableElement(shadowEl, {
-      start: _inputOrTextareaSelection.start,
-      end: _inputOrTextareaSelection.end
+      start: selectedStart,
+      end: selectedEnd
     })
+  } else {
+    const { start, end } = getSelectionContenteditable(_element)
+
+    selectedStart = start
+    selectedEnd = end
   }
 
   const selection = window.getSelection()
   const range = selection?.getRangeAt(0)
-  
+
   const rect = range?.getBoundingClientRect().toJSON() as Rect | null
   const rects = Array.from(range?.getClientRects() || []).map(r => r.toJSON() as Rect | null)
-  
+
   const rectTop = rects[0]
   const rectBottom = rects[rects.length - 1]
 
   const start = { x: rectTop?.left || 0, y: rectTop?.top || 0 }
   const end = { x: rectBottom?.right || 0, y: rectBottom?.bottom || 0 }
 
-  // shadowEl && document.body.removeChild(shadowEl)
+  shadowEl && document.body.removeChild(shadowEl)
 
   setSelection(_element, {
     start: selectedStart,
