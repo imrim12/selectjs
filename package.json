@@ -1,7 +1,7 @@
 {
   "name": "@selectjs/core",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.1-rc.1",
   "author": "Nguyễn Hữu Nguyên Ý <nguyenhuunguyeny.ny@gmail.com>",
   "homepage": "https://github.com/imrim12/selectjs",
   "repository": {

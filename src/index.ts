@@ -1,5 +1,7 @@
 export * from './get'
 
+export * from './highlight'
+
 export * from './keep'
 
 export * from './set'

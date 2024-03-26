@@ -94,12 +94,12 @@ export function getSelectionRect(element?: HTMLElement): GetSelectionRectResult 
   let shadowEl: HTMLElement | null = null
   let selectedEnd = 0
   let selectedStart = 0
-  
+
   if (isInputOrTextarea(_element)) {
     const _inputOrTextareaElement = _element as HTMLInputElement | HTMLTextAreaElement
-    
+
     const _inputOrTextareaSelection = getSelectionInputOrTextarea(_inputOrTextareaElement)
-    
+
     shadowEl = shadowElement(_inputOrTextareaElement)
     shadowEl.contentEditable = 'true'
     document.body.appendChild(shadowEl)
@@ -113,27 +113,25 @@ export function getSelectionRect(element?: HTMLElement): GetSelectionRectResult 
   const selection = window.getSelection()
   const range = selection?.getRangeAt(0)
   
-  const rect = range?.getBoundingClientRect().toJSON() as Rect
-  const rects = Array.from(range?.getClientRects() || []).map(rect => rect.toJSON() as Rect)
+  const rect = range?.getBoundingClientRect().toJSON() as Rect | null
+  const rects = Array.from(range?.getClientRects() || []).map(r => r.toJSON() as Rect | null)
   
   const rectTop = rects[0]
   const rectBottom = rects[rects.length - 1]
 
-  const start = { x: rectTop.left, y: rectTop.top }
-  const end = { x: rectBottom.right, y: rectBottom.bottom }
+  const start = { x: rectTop?.left || 0, y: rectTop?.top || 0 }
+  const end = { x: rectBottom?.right || 0, y: rectBottom?.bottom || 0 }
 
-  setTimeout(() => {
-    shadowEl && document.body.removeChild(shadowEl)
+  // shadowEl && document.body.removeChild(shadowEl)
 
-    setSelection(_element, {
-      start: selectedStart,
-      end: selectedEnd
-    })
-  }, 0)
+  setSelection(_element, {
+    start: selectedStart,
+    end: selectedEnd
+  })
 
   return {
     rect,
-    children: rects,
+    children: rects.filter(Boolean) as Rect[],
     start,
     end,
   }

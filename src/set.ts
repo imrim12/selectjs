@@ -43,8 +43,6 @@ export function setSelectionContenteditableElement(element: HTMLElement, options
 
 export function setSelection(element: HTMLElement, options: SetSelectionOptions): SetSelectionResult {
   const _options = defu(options, {
-    start: 0,
-    end: 0,
     keep: false
   })
   let selectedText = ''
