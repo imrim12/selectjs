@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.0.1-rc.1",
   "author": "Nguyễn Hữu Nguyên Ý <nguyenhuunguyeny.ny@gmail.com>",
+  "description": "A package to enhance your selection experience, using the Selection API and Range API.",
   "homepage": "https://github.com/imrim12/selectjs",
   "repository": {
     "type": "git",

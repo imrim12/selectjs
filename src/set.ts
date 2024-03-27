@@ -40,15 +40,42 @@ export function setSelectionContenteditableElement(element: HTMLElement, options
 
   const selection = window.getSelection();
 
-  if (selection && _element.firstChild) {
+  if (selection) {
+    let charCount = 0,
+    startNode: Node | undefined,
+    startOffset = 0,
+    endNode: Node | undefined,
+    endOffset = 0
+
+    function traverseNodes(node: Node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const nextCharCount = charCount + Number(node.textContent?.length);
+        if (!startNode && _options.start >= charCount && _options.start < nextCharCount) {
+          startNode = node;
+          startOffset = _options.start - charCount;
+        }
+        if (!endNode && _options.end >= charCount && _options.end <= nextCharCount) {
+          endNode = node;
+          endOffset = _options.end - charCount;
+        }
+        charCount = nextCharCount;
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        for (let i = 0; i < node.childNodes.length && !endNode; i++) {
+          traverseNodes(node.childNodes[i]);
+        }
+      }
+    }
+
+    traverseNodes(element);
+
     const range = document.createRange();
-    range.setStart(_element.firstChild, _options.start);
-    range.setEnd(_element.firstChild, _options.end);
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    return selection.toString()
+    if (startNode && endNode) {
+      range.setStart(startNode, startOffset);
+      range.setEnd(endNode, endOffset);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return selection.toString()
+    }
   }
 
   return ''

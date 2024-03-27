@@ -25,7 +25,7 @@
         <label>
           Editor with contenteditable:
           <div contenteditable style="max-width: 400px">
-            Hello World from contenteditable Lorem ipsum dolor sit amet
+            Hello <b>World from contenteditable</b> Lorem ipsum dolor sit amet
             consectetur adipisicing elit. Dolorum, neque id saepe similique
             libero, accusantium est sed dolore itaque labore esse architecto,
             repellendus dolores excepturi dolor. Ex quos voluptates accusantium.
@@ -36,7 +36,7 @@
     <script type="module">
       // Just an example, this project does not depend on Vue
       import { createApp, ref, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-      import { setSelection, getSelectionRect, setHighlight } from './src/index'
+      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent } from './src/index'
 
       function waitFor(time = 0) {
         return new Promise((r) => setTimeout(r, time))
@@ -67,10 +67,15 @@
 
             wait && await waitFor(3000)
 
-            setSelection(contenteditable$, { start: 10, end: 200, keep: true })
+            setSelection(contenteditable$, { start: 15, end: 200, keep: true })
             wait && await waitFor(1000)
             const selectionContenteditableRect = getSelectionRect(contenteditable$)
-            setHighlight(selectionContenteditableRect.children)
+            // setHighlight(selectionContenteditableRect.children)
+            wait && await waitFor(1000)
+            replaceSelectionContent('Hehe i dunno man')
+            wait && await waitFor(1000)
+            const selectionContenteditableRectNew = getSelectionRect(contenteditable$)
+            setHighlight(selectionContenteditableRectNew.children)
           })
 
           return {}

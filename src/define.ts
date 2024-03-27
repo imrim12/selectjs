@@ -10,7 +10,9 @@ export function defineSelectable<T extends HTMLElement>(element: T, options?: De
   const _options = defu(options, {
     keep: false
   })
-  
+
+  element.normalize()
+
   const selectableId = getProp(element, 'id')
 
   if (!selectableId) {
