@@ -3,24 +3,22 @@ export function replaceSelectionContent(content: string) {
   if (!selection?.rangeCount) return;
 
   const range = selection.getRangeAt(0);
+
   range.deleteContents();
 
   const div = document.createElement('div');
-  div.innerHTML = content
+  div.innerHTML = content;
 
   const fragment = document.createDocumentFragment();
-  let lastNode;
-  while ((lastNode = div.firstChild)) {
-    lastNode = fragment.appendChild(lastNode);
+  let lastNode: Node | undefined;
+  while (div.firstChild) { // Check if there are still child nodes in the div
+    lastNode = div.firstChild
+    fragment.appendChild(lastNode);
   }
+
   range.insertNode(fragment);
 
-  if (lastNode) {
-    range.setStartAfter(lastNode);
-    range.setEndAfter(lastNode);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
+  range.commonAncestorContainer.normalize()
 
-  return range
+  return range;
 }

@@ -1,7 +1,8 @@
 import defu from 'defu'
 
 import { getSelection } from './get';
-import { setSelection } from './set';
+import { setSelection, setSelectionNode } from './set';
+import { isInputOrTextarea } from './utils';
 
 export interface KeepSelectionOptions {
   stopIfSelectEmpty?: boolean
@@ -17,14 +18,17 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
   })
 
   const selection = getSelection(element)
-  
+
   function reselectElement() {
-    const currentSelection = getSelection(element)
+    let currentSelection = getSelection(element)
 
     if (!currentSelection.text && _options.stopIfSelectEmpty)
       return removeKeepListener()
 
-    setSelection(element, { start: currentSelection.start || selection.start, end: currentSelection.end || selection.end })
+    if (isInputOrTextarea(element))
+      setSelection(element, { start: currentSelection.start ?? selection.start, end: currentSelection.end ?? selection.end })
+    else
+      setSelectionNode(window.getSelection()?.focusNode || element, { start: currentSelection.start ?? selection.start, end: currentSelection.end ?? selection.end })
   }
 
   element.addEventListener('blur', reselectElement)

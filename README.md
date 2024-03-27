@@ -7,6 +7,7 @@ The current version is version 0.0.1-rc.1
 The latest source code and releases are on [GitHub](https://github.com/imrim12/selectjs.git).
 
 ## Installation
+
 ```bash
 npm i @selectjs/core
 
@@ -18,8 +19,11 @@ yarn add @selectjs/core
 ```
 
 ## Usage
+
 ### 1. Set selection
+
 #### Example
+
 Select any editable elements, input, textarea or element with contenteditable attribute from character to character using `start` and `end` options.
 
 ```typescript
@@ -31,12 +35,14 @@ const element = document.querySelector('input')
 
 setSelection(element, { start: 0, end: 5 })
 ```
+
 #### `setSelection` Options
+
 |Option|Type|Description
-|-|-|-|
-|`start`|`number`|Start offset of the selection|
-|`end`|`number`|End offset of the selection|
-|`keep`|`boolean`|Keep selecting the element until the selection is changed to empty and the element got blur|
+|-|-|-
+|`start`|`number`|Start offset of the selection
+|`end`|`number`|End offset of the selection
+|`keep`|`boolean`|Keep selecting the element until the selection is changed to empty and the element got blur
 
 ### 2. Get selection
 
