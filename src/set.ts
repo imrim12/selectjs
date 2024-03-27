@@ -29,6 +29,22 @@ export function setSelectionInputOrTextareaElement(element: HTMLInputElement | H
   return _element.value.slice(_options.start, _options.end)
 }
 
+export function setSelectionNode(node: Node, options?: SetSelectionOptions) {
+  const _options = defu(options, {
+    keep: false
+  })
+
+  const selection = window.getSelection();
+  const range = document.createRange();
+
+  range.setStart(node, _options.start);
+  range.setEnd(node, _options.end);
+
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+  return selection?.toString()
+}
+
 export function setSelectionContenteditableElement(element: HTMLElement, options?: SetSelectionOptions) {
   const _options = defu(options, {
     keep: false

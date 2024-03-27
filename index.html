@@ -46,26 +46,26 @@
         setup() {
           const message = ref('Hello vue!')
           
-          const wait = true
+          const wait = false
           
           onMounted(async () => {
             const input$ = document.querySelector('input')
             const textarea$ = document.querySelector('textarea')
             const contenteditable$ = document.querySelector('[contenteditable]')
 
-            setSelection(input$, { start: 0, end: 5 })
-            wait && await waitFor(1000)
-            const selectionInputRect = getSelectionRect(input$)
-            setHighlight(selectionInputRect.children)
+            // setSelection(input$, { start: 0, end: 5, keep: true })
+            // wait && await waitFor(1000)
+            // const selectionInputRect = getSelectionRect(input$)
+            // setHighlight(selectionInputRect.children)
 
-            wait && await waitFor(3000)
+            // wait && await waitFor(3000)
 
-            setSelection(textarea$, { start: 0, end: 5 })
-            wait && await waitFor(1000)
-            const selectionTextareaRect = getSelectionRect(textarea$)
-            setHighlight(selectionTextareaRect.children)
+            // setSelection(textarea$, { start: 0, end: 5, keep: true })
+            // wait && await waitFor(1000)
+            // const selectionTextareaRect = getSelectionRect(textarea$)
+            // setHighlight(selectionTextareaRect.children)
 
-            wait && await waitFor(3000)
+            // wait && await waitFor(3000)
 
             setSelection(contenteditable$, { start: 15, end: 200, keep: true })
             wait && await waitFor(1000)
@@ -76,6 +76,9 @@
             wait && await waitFor(1000)
             const selectionContenteditableRectNew = getSelectionRect(contenteditable$)
             setHighlight(selectionContenteditableRectNew.children)
+            
+            // console.log(window.getSelection())
+            // console.log(window.getSelection().getRangeAt(0))
           })
 
           return {}
