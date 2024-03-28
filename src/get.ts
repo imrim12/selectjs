@@ -90,19 +90,26 @@ export function getSelection(element?: HTMLElement): GetSelectionResult {
   }
 }
 
-export function getSelectionRect(element?: HTMLElement): GetSelectionRectResult {
+export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSelectionResult): GetSelectionRectResult {
   const _element = (element || document.activeElement) as HTMLElement
   let shadowEl: HTMLElement | null = null
   let selectedEnd = 0
   let selectedStart = 0
 
+  if (currentSelection) {
+    selectedStart = currentSelection.start
+    selectedEnd = currentSelection.end
+  }
+
   if (isInputOrTextarea(_element)) {
     const _inputOrTextareaElement = _element as HTMLInputElement | HTMLTextAreaElement
 
-    const _inputOrTextareaSelection = getSelectionInputOrTextarea(_inputOrTextareaElement)
+    if (!currentSelection) {
+      const _inputOrTextareaSelection = getSelectionInputOrTextarea(_inputOrTextareaElement)
 
-    selectedStart = _inputOrTextareaSelection.start
-    selectedEnd = _inputOrTextareaSelection.end
+      selectedStart = _inputOrTextareaSelection.start
+      selectedEnd = _inputOrTextareaSelection.end
+    }
 
     shadowEl = shadowElement(_inputOrTextareaElement)
     shadowEl.contentEditable = 'true'
@@ -112,7 +119,7 @@ export function getSelectionRect(element?: HTMLElement): GetSelectionRectResult 
       start: selectedStart,
       end: selectedEnd
     })
-  } else {
+  } else if (!currentSelection) {
     const { start, end } = getSelectionContenteditable(_element)
 
     selectedStart = start
@@ -131,13 +138,15 @@ export function getSelectionRect(element?: HTMLElement): GetSelectionRectResult 
   const start = { x: rectTop?.left || 0, y: rectTop?.top || 0 }
   const end = { x: rectBottom?.right || 0, y: rectBottom?.bottom || 0 }
 
-  shadowEl && document.body.removeChild(shadowEl)
+  if (isInputOrTextarea(_element)) {
+    shadowEl && document.body.removeChild(shadowEl)
 
-  setSelection(_element, {
-    start: selectedStart,
-    end: selectedEnd,
-    keep: getProp(_element, 'keep') === 'true'
-  })
+    setSelection(_element, {
+      start: selectedStart,
+      end: selectedEnd,
+      keep: getProp(_element, 'keep') === 'true'
+    })
+  }
 
   return {
     rect,

@@ -45,3 +45,17 @@ export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaratio
 
   return newEl
 }
+
+export function debounce(fn: Function, time = 0) {
+  let timeout: number;
+
+  return function executedFunction(...args: any) {
+    const later = () => {
+      clearTimeout(timeout);
+      fn(...args);
+    };
+
+    clearTimeout(timeout);
+    timeout = setTimeout(later, time);
+  };
+}

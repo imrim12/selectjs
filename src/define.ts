@@ -27,7 +27,7 @@ export function defineSelectable<T extends HTMLElement>(element: T, options?: De
 
 
 export function getProp<T extends HTMLElement>(element: T, key: 'id' | 'keep') {
-  return element.dataset['selectable-' + key]
+  return element.getAttribute('data-selectable-' + key)
 }
 
 export function setProp<T extends HTMLElement>(element: T, key: 'id' | 'keep', value: string) {
