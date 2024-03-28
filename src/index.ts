@@ -13,3 +13,5 @@ export * from './replace'
 export * from './set'
 
 export * from './utils'
+
+export * from './watch'
