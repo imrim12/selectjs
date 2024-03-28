@@ -1,7 +1,7 @@
 import defu from 'defu'
 import { defineSelectable } from './define'
 import { getSelection, getSelectionRect } from './get'
-import type { GetSelectionResult, GetSelectionRectResult } from './get'
+import type { GetSelectionRectResult, GetSelectionResult } from './get'
 import { keepSelection } from './keep'
 import { debounce } from './utils'
 import { enableEffect, isEffectDisabled } from './effect'

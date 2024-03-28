@@ -13,17 +13,27 @@ export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaratio
     newEl.innerHTML = el.innerHTML
 
   const elComputedStyles = window.getComputedStyle(el)
-  
+
   for (const style of [
-    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-    'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
-    'fontFamily', 'fontSize',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'marginTop',
+    'marginRight',
+    'marginBottom',
+    'marginLeft',
+    'borderTop',
+    'borderRight',
+    'borderBottom',
+    'borderLeft',
+    'fontFamily',
+    'fontSize',
     'lineHeight',
-    'textAlign'
+    'textAlign',
   ]) {
     Object.assign(newEl.style, {
-      [style]: elComputedStyles[style as keyof typeof elComputedStyles]
+      [style]: elComputedStyles[style as keyof typeof elComputedStyles],
     })
   }
 
@@ -47,15 +57,15 @@ export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaratio
 }
 
 export function debounce(fn: Function, time = 0) {
-  let timeout: number;
+  let timeout: number
 
   return function executedFunction(...args: any) {
     const later = () => {
-      clearTimeout(timeout);
-      fn(...args);
-    };
+      clearTimeout(timeout)
+      fn(...args)
+    }
 
-    clearTimeout(timeout);
-    timeout = setTimeout(later, time);
-  };
+    clearTimeout(timeout)
+    timeout = setTimeout(later, time)
+  }
 }
