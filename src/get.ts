@@ -6,7 +6,7 @@ export interface GetSelectionResult {
   text: string
   start: number
   end: number
-  direction: "forward" | "backward" | "none" | null
+  direction: 'forward' | 'backward' | 'none' | null
 }
 
 export interface Position {
@@ -82,12 +82,11 @@ export function getSelectionContenteditable(element: HTMLElement): GetSelectionR
 
 export function getSelection(element?: HTMLElement): GetSelectionResult {
   const _element = (element || document.activeElement) as HTMLElement
-  
-  if (isInputOrTextarea(_element)) {
+
+  if (isInputOrTextarea(_element))
     return getSelectionInputOrTextarea(_element as HTMLInputElement | HTMLTextAreaElement)
-  } else {
+  else
     return getSelectionContenteditable(_element)
-  }
 }
 
 export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSelectionResult): GetSelectionRectResult {
@@ -117,9 +116,11 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
 
     setSelectionContenteditableElement(shadowEl, {
       start: selectedStart,
-      end: selectedEnd
+      end: selectedEnd,
+      noEffect: true,
     })
-  } else if (!currentSelection) {
+  }
+  else if (!currentSelection) {
     const { start, end } = getSelectionContenteditable(_element)
 
     selectedStart = start
@@ -144,7 +145,8 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
     setSelection(_element, {
       start: selectedStart,
       end: selectedEnd,
-      keep: getProp(_element, 'keep') === 'true'
+      noEffect: true,
+      keep: getProp(_element, 'keep') === 'true',
     })
   }
 

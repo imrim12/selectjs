@@ -4,6 +4,7 @@ import { getSelection, getSelectionRect } from './get'
 import type { GetSelectionResult, GetSelectionRectResult } from './get'
 import { keepSelection } from './keep'
 import { debounce } from './utils'
+import { enableEffect, isEffectDisabled } from './effect'
 
 export interface WatchSelectionOptions {
   keep?: boolean
@@ -13,11 +14,11 @@ export interface WatchSelectionOptions {
 export function watchSelection(
   element: HTMLElement,
   callback: (selection: GetSelectionResult, selectionRect: GetSelectionRectResult) => void,
-  options?: WatchSelectionOptions
+  options?: WatchSelectionOptions,
 ) {
   const _options = defu(options, {
     keep: false,
-    debounce: 0
+    debounce: 0,
   })
 
   const _element = defineSelectable(element, _options)
@@ -32,15 +33,24 @@ export function watchSelection(
   }
 
   let lastSelectedText = ''
-  const handleSelectionChange = debounce(function () {
+  const handleSelectionChange = debounce(() => {
     // `isMouseOrTouchDownOnElement` will be false if debounce has value because by that time, no mouse event is captured!
-    if (!isMouseOrTouchDownOnElement && !_options.debounce) return
+    if (!isMouseOrTouchDownOnElement && !_options.debounce)
+      return
+
+    if (isEffectDisabled()) {
+      enableEffect()
+
+      return
+    }
 
     const selection = getSelection(element)
 
-    if (!selection.text) return
+    if (!selection.text)
+      return
 
-    if (selection.text === lastSelectedText) return
+    if (selection.text === lastSelectedText)
+      return
 
     lastSelectedText = selection.text
 
@@ -61,6 +71,6 @@ export function watchSelection(
     stopKeeping = keepSelection(element).stop
 
   return {
-    stopKeeping
+    stopKeeping,
   }
 }

@@ -1,14 +1,14 @@
 import defu from 'defu'
 
-import { Rect } from './get';
-import { getProp } from './define';
+import type { Rect } from './get'
+import { getProp } from './define'
 
 export interface SetHighlightOptions {
   class?: string
-  height?: number
+  stroke?: number
   color?: string
   container?: HTMLElement
-  position?: 'fixed' | 'absolute',
+  position?: 'fixed' | 'absolute'
   offsetX?: number
   offsetY?: number
   duration?: number
@@ -16,12 +16,12 @@ export interface SetHighlightOptions {
 
 /**
  * Create highlighting blocks by the passed `rects`
- * 
+ *
  * If `options.class` has value, all styling property will not be added~
  */
 export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetHighlightOptions) {
   const _options = defu(options, {
-    height: 2,
+    stroke: 2,
     color: '#3fba54',
     container: element.parentElement || document,
     position: 'absolute' as const,
@@ -30,14 +30,15 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
     duration: 300,
   })
   const selectableId = getProp(element, 'id')
-  
-  if (!selectableId) return
+
+  if (!selectableId)
+    return
 
   const existingHighlight = document.querySelectorAll(`[data-selectable-highlight-for="${selectableId}"]`)
-  existingHighlight.forEach((e) => e.remove())
+  existingHighlight.forEach(e => e.remove())
 
   const highlights: HTMLDivElement[] = []
-  
+
   const scrollY = window.scrollY
   const scrollX = window.scrollX
 
@@ -51,15 +52,18 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
     div.style.top = `${rect.top + rect.height + _options.offsetY + scrollY}px`
     div.style.left = `${rect.left + _options.offsetX + scrollX}px`
     div.style.width = `${rect.width}px`
-    
+
     if (_options.class) {
       div.classList.add(_options.class)
-    } else {
-      div.style.height = `${_options.height}px`
+    }
+    else {
+      div.style.height = `${_options.stroke}px`
       div.style.backgroundColor = `${_options.color}`
       div.style.position = _options.position
       div.style.userSelect = 'none'
       div.style.transitionDuration = `${_options.duration}ms`
+      div.style.transitionProperty = 'opacity'
+      div.style.opacity = '1'
     }
 
     _options.container.appendChild(div)
@@ -68,11 +72,16 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
   }
 
   function clear() {
-    for (const highlight of highlights)
-      _options.container.removeChild(highlight)
+    for (const highlight of highlights) {
+      highlight.style.opacity = '0'
+
+      requestAnimationFrame(() => {
+        _options.container.removeChild(highlight)
+      })
+    }
   }
 
   return {
-    clear
+    clear,
   }
 }
