@@ -3,11 +3,13 @@ import defu from 'defu'
 import { isInputOrTextarea } from './utils'
 import { keepSelection } from './keep'
 import { defineSelectable } from './define'
+import { disableEffect } from './effect'
 
 export interface SetSelectionOptions {
-  start: number,
-  end: number,
+  start: number
+  end: number
   keep?: boolean
+  noEffect?: boolean
 }
 
 export interface SetSelectionResult {
@@ -17,79 +19,88 @@ export interface SetSelectionResult {
 
 export function setSelectionInputOrTextareaElement(element: HTMLInputElement | HTMLTextAreaElement, options?: SetSelectionOptions) {
   const _options = defu(options, {
-    keep: false
+    keep: false,
   })
+
+  if (_options.noEffect)
+    disableEffect()
 
   const _element = defineSelectable(element, _options)
 
   _element.focus()
 
-  _element.setSelectionRange(_options.start, _options.end)
+  _element.setSelectionRange(_options.start, _options.end, 'none')
 
   return _element.value.slice(_options.start, _options.end)
 }
 
 export function setSelectionNode(node: Node, options?: SetSelectionOptions) {
   const _options = defu(options, {
-    keep: false
+    keep: false,
   })
 
-  const selection = window.getSelection();
-  const range = document.createRange();
+  if (_options.noEffect)
+    disableEffect()
 
-  range.setStart(node, _options.start);
-  range.setEnd(node, _options.end);
+  const selection = window.getSelection()
+  const range = document.createRange()
 
-  selection?.removeAllRanges();
-  selection?.addRange(range);
+  range.setStart(node, _options.start)
+  range.setEnd(node, _options.end)
+
+  selection?.removeAllRanges()
+  selection?.addRange(range)
   return selection?.toString()
 }
 
 export function setSelectionContenteditableElement(element: HTMLElement, options?: SetSelectionOptions) {
   const _options = defu(options, {
-    keep: false
+    keep: false,
   })
+
+  if (_options.noEffect)
+    disableEffect()
 
   const _element = defineSelectable(element, _options)
 
   _element.focus()
 
-  const selection = window.getSelection();
+  const selection = window.getSelection()
 
   if (selection) {
-    let charCount = 0,
-    startNode: Node | undefined,
-    startOffset = 0,
-    endNode: Node | undefined,
-    endOffset = 0
+    let charCount = 0
+    let startNode: Node | undefined
+    let startOffset = 0
+    let endNode: Node | undefined
+    let endOffset = 0
 
     function traverseNodes(node: Node) {
       if (node.nodeType === Node.TEXT_NODE) {
-        const nextCharCount = charCount + Number(node.textContent?.length);
+        const nextCharCount = charCount + Number(node.textContent?.length)
         if (!startNode && _options.start >= charCount && _options.start < nextCharCount) {
-          startNode = node;
-          startOffset = _options.start - charCount;
+          startNode = node
+          startOffset = _options.start - charCount
         }
         if (!endNode && _options.end >= charCount && _options.end <= nextCharCount) {
-          endNode = node;
-          endOffset = _options.end - charCount;
+          endNode = node
+          endOffset = _options.end - charCount
         }
-        charCount = nextCharCount;
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        for (let i = 0; i < node.childNodes.length && !endNode; i++) {
-          traverseNodes(node.childNodes[i]);
-        }
+        charCount = nextCharCount
+      }
+      else if (node.nodeType === Node.ELEMENT_NODE) {
+        for (let i = 0; i < node.childNodes.length && !endNode; i++)
+          traverseNodes(node.childNodes[i])
       }
     }
 
-    traverseNodes(element);
+    traverseNodes(element)
 
-    const range = document.createRange();
+    const range = document.createRange()
     if (startNode && endNode) {
-      range.setStart(startNode, startOffset);
-      range.setEnd(endNode, endOffset);
-      selection.removeAllRanges();
-      selection.addRange(range);
+      range.setStart(startNode, startOffset)
+      range.setEnd(endNode, endOffset)
+      selection.removeAllRanges()
+      selection.addRange(range)
       return selection.toString()
     }
   }
@@ -99,7 +110,7 @@ export function setSelectionContenteditableElement(element: HTMLElement, options
 
 export function setSelection(element: HTMLElement, options: SetSelectionOptions): SetSelectionResult {
   const _options = defu(options, {
-    keep: false
+    keep: false,
   })
 
   const _element = defineSelectable(element, options)
@@ -108,20 +119,18 @@ export function setSelection(element: HTMLElement, options: SetSelectionOptions)
 
   _element.focus()
 
-  if (isInputOrTextarea(_element)) {
-    selectedText = setSelectionInputOrTextareaElement(_element as HTMLInputElement | HTMLTextAreaElement, { start: _options.start, end: _options.end })
-  } else {
-    selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end })
-  }
+  if (isInputOrTextarea(_element))
+    selectedText = setSelectionInputOrTextareaElement(_element as HTMLInputElement | HTMLTextAreaElement, { start: _options.start, end: _options.end, noEffect: _options.noEffect })
+  else
+    selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end, noEffect: _options.noEffect })
 
   let stopKeeping = () => {}
 
-  if (_options.keep) {
+  if (_options.keep)
     stopKeeping = keepSelection(_element).stop
-  }
 
   return {
     text: selectedText,
-    stopKeeping
+    stopKeeping,
   }
 }

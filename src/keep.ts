@@ -1,8 +1,8 @@
 import defu from 'defu'
 
-import { getSelection } from './get';
-import { setSelection, setSelectionNode } from './set';
-import { isInputOrTextarea } from './utils';
+import { getSelection } from './get'
+import { setSelection, setSelectionNode } from './set'
+import { isInputOrTextarea } from './utils'
 
 export interface KeepSelectionOptions {
   stopIfSelectEmpty?: boolean
@@ -14,21 +14,31 @@ export interface KeepSelectionOptions {
  */
 export function keepSelection(element: HTMLElement, options?: KeepSelectionOptions) {
   const _options = defu(options, {
-    stopIfSelectEmpty: true
+    stopIfSelectEmpty: true,
   })
 
   const selection = getSelection(element)
 
   function reselectElement() {
-    let currentSelection = getSelection(element)
+    const currentSelection = getSelection(element)
 
     if (!currentSelection.text && _options.stopIfSelectEmpty)
       return removeKeepListener()
 
-    if (isInputOrTextarea(element))
-      setSelection(element, { start: currentSelection.start ?? selection.start, end: currentSelection.end ?? selection.end })
-    else
-      setSelectionNode(window.getSelection()?.focusNode || element, { start: currentSelection.start ?? selection.start, end: currentSelection.end ?? selection.end })
+    if (isInputOrTextarea(element)) {
+      setSelection(element, {
+        start: currentSelection.start ?? selection.start,
+        end: currentSelection.end ?? selection.end,
+        noEffect: true,
+      })
+    }
+    else {
+      setSelectionNode(window.getSelection()?.focusNode || element, {
+        start: currentSelection.start ?? selection.start,
+        end: currentSelection.end ?? selection.end,
+        noEffect: true,
+      })
+    }
   }
 
   element.addEventListener('blur', reselectElement)
@@ -36,8 +46,8 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
   function removeKeepListener() {
     element.removeEventListener('blur', reselectElement)
   }
-  
+
   return {
-    stop: removeKeepListener
+    stop: removeKeepListener,
   }
 }
