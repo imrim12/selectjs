@@ -1,31 +1,22 @@
 import defu from 'defu'
 
 import { isInputOrTextarea } from './utils'
-import { keepSelection } from './keep'
 import { defineSelectable } from './define'
 import { disableEffect } from './effect'
 
 export interface SetSelectionOptions {
   start: number
   end: number
-  keep?: boolean
   noEffect?: boolean
 }
 
-export interface SetSelectionResult {
-  text: string
-  stopKeeping: () => void
-}
-
 export function setSelectionInputOrTextareaElement(element: HTMLInputElement | HTMLTextAreaElement, options?: SetSelectionOptions) {
-  const _options = defu(options, {
-    keep: false,
-  })
+  const _options = defu(options, {})
 
   if (_options.noEffect)
     disableEffect()
 
-  const _element = defineSelectable(element, _options)
+  const _element = defineSelectable(element)
 
   _element.focus()
 
@@ -35,9 +26,7 @@ export function setSelectionInputOrTextareaElement(element: HTMLInputElement | H
 }
 
 export function setSelectionNode(node: Node, options?: SetSelectionOptions) {
-  const _options = defu(options, {
-    keep: false,
-  })
+  const _options = defu(options, {})
 
   if (_options.noEffect)
     disableEffect()
@@ -54,14 +43,12 @@ export function setSelectionNode(node: Node, options?: SetSelectionOptions) {
 }
 
 export function setSelectionContenteditableElement(element: HTMLElement, options?: SetSelectionOptions) {
-  const _options = defu(options, {
-    keep: false,
-  })
+  const _options = defu(options, {})
 
   if (_options.noEffect)
     disableEffect()
 
-  const _element = defineSelectable(element, _options)
+  const _element = defineSelectable(element)
 
   _element.focus()
 
@@ -108,12 +95,10 @@ export function setSelectionContenteditableElement(element: HTMLElement, options
   return ''
 }
 
-export function setSelection(element: HTMLElement, options: SetSelectionOptions): SetSelectionResult {
-  const _options = defu(options, {
-    keep: false,
-  })
+export function setSelection(element: HTMLElement, options: SetSelectionOptions) {
+  const _options = defu(options, {})
 
-  const _element = defineSelectable(element, options)
+  const _element = defineSelectable(element)
 
   let selectedText = ''
 
@@ -124,13 +109,5 @@ export function setSelection(element: HTMLElement, options: SetSelectionOptions)
   else
     selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end, noEffect: _options.noEffect })
 
-  let stopKeeping = () => {}
-
-  if (_options.keep)
-    stopKeeping = keepSelection(_element).stop
-
-  return {
-    text: selectedText,
-    stopKeeping,
-  }
+  return selectedText
 }

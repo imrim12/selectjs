@@ -19,6 +19,9 @@ devDependencies:
   eslint:
     specifier: ^8.57.0
     version: 8.57.0
+  type-fest:
+    specifier: ^4.14.0
+    version: 4.14.0
   typescript:
     specifier: ^5.2.2
     version: 5.4.3
@@ -3066,6 +3069,11 @@ packages:
   /type-fest@0.8.1:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
+    dev: true
+
+  /type-fest@4.14.0:
+    resolution: {integrity: sha512-on5/Cw89wwqGZQu+yWO0gGMGu8VNxsaW9SB2HE8yJjllEk7IDTwnSN1dUVldYILhYPN5HzD7WAaw2cc/jBfn0Q==}
+    engines: {node: '>=16'}
     dev: true
 
   /typescript@5.3.3:

@@ -3,9 +3,11 @@ import defu from 'defu'
 import { getSelection } from './get'
 import { setSelection, setSelectionNode } from './set'
 import { isInputOrTextarea } from './utils'
+import { isMouseInBound, watchMouseMovement } from './mouse'
 
 export interface KeepSelectionOptions {
-  stopIfSelectEmpty?: boolean
+  withinBound?: HTMLElement | HTMLElement[]
+  onBlur?: ((e: FocusEvent) => void)
 }
 
 /**
@@ -13,29 +15,41 @@ export interface KeepSelectionOptions {
  *
  */
 export function keepSelection(element: HTMLElement, options?: KeepSelectionOptions) {
-  const _options = defu(options, {
-    stopIfSelectEmpty: true,
-  })
+  const _options = defu(options, {})
 
-  const selection = getSelection(element)
+  watchMouseMovement()
 
-  function reselectElement() {
+  function reselectElement(e: FocusEvent) {
     const currentSelection = getSelection(element)
 
-    if (!currentSelection.text && _options.stopIfSelectEmpty)
-      return removeKeepListener()
+    if (
+      !currentSelection.text
+      || (
+        _options.withinBound
+        && !isMouseInBound(element)
+        && !(
+          Array.isArray(_options.withinBound)
+            ? _options.withinBound.some(isMouseInBound)
+            : isMouseInBound(_options.withinBound)
+        )
+      )
+    ) {
+      _options.onBlur?.(e)
+
+      return
+    }
 
     if (isInputOrTextarea(element)) {
       setSelection(element, {
-        start: currentSelection.start ?? selection.start,
-        end: currentSelection.end ?? selection.end,
+        start: currentSelection.start,
+        end: currentSelection.end,
         noEffect: true,
       })
     }
     else {
       setSelectionNode(window.getSelection()?.focusNode || element, {
-        start: currentSelection.start ?? selection.start,
-        end: currentSelection.end ?? selection.end,
+        start: currentSelection.start,
+        end: currentSelection.end,
         noEffect: true,
       })
     }
