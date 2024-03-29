@@ -1,7 +1,7 @@
 {
   "name": "@selectjs/core",
   "type": "module",
-  "version": "0.0.1-rc.3",
+  "version": "0.0.1-rc.4",
   "description": "A package to enhance your selection experience, using the Selection API and Range API.",
   "author": "Nguyễn Hữu Nguyên Ý <nguyenhuunguyeny.ny@gmail.com>",
   "homepage": "https://github.com/imrim12/selectjs",
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^2.11.4",
     "eslint": "^8.57.0",
+    "type-fest": "^4.14.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^3.7.3"

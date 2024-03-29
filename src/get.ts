@@ -1,4 +1,3 @@
-import { getProp } from './define'
 import { setSelection, setSelectionContenteditableElement } from './set'
 import { isInputOrTextarea, shadowElement } from './utils'
 
@@ -146,7 +145,6 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
       start: selectedStart,
       end: selectedEnd,
       noEffect: true,
-      keep: getProp(_element, 'keep') === 'true',
     })
   }
 

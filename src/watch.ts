@@ -7,8 +7,9 @@ import { debounce } from './utils'
 import { enableEffect, isEffectDisabled } from './effect'
 
 export interface WatchSelectionOptions {
-  keep?: boolean
+  keepInBound?: HTMLElement | HTMLElement[]
   debounce?: number
+  onBlur?: (e: FocusEvent) => void
 }
 
 export function watchSelection(
@@ -17,7 +18,6 @@ export function watchSelection(
   options?: WatchSelectionOptions,
 ) {
   const _options = defu(options, {
-    keep: false,
     debounce: 0,
   })
 
@@ -33,7 +33,7 @@ export function watchSelection(
   }
 
   let lastSelectedText = ''
-  const handleSelectionChange = debounce(() => {
+  function handleSelectionChange() {
     // `isMouseOrTouchDownOnElement` will be false if debounce has value because by that time, no mouse event is captured!
     if (!isMouseOrTouchDownOnElement && !_options.debounce)
       return
@@ -57,18 +57,26 @@ export function watchSelection(
     const selectionRect = getSelectionRect(element)
 
     callback(selection, selectionRect)
-  }, _options.debounce)
+  }
+  const debouncedHandleSelectionChange = _options.debounce ? debounce(handleSelectionChange, _options.debounce) : handleSelectionChange
 
   _element.addEventListener('mousedown', handleMouseOrTouchDownOnElement)
   _element.addEventListener('mouseup', handleMouseOrTouchUpOnElement)
   _element.addEventListener('touchstart', handleMouseOrTouchDownOnElement)
   _element.addEventListener('touchend', handleMouseOrTouchUpOnElement)
 
-  document.addEventListener('selectionchange', handleSelectionChange)
+  document.addEventListener('selectionchange', debouncedHandleSelectionChange)
 
   let stopKeeping: null | (() => void) = null
-  if (_options.keep)
-    stopKeeping = keepSelection(element).stop
+  if (_options.keepInBound) {
+    stopKeeping = keepSelection(element, {
+      withinBound: _options.keepInBound,
+      onBlur: _options.onBlur,
+    }).stop
+  }
+  else if (_options.onBlur) {
+    element.addEventListener('blur', _options.onBlur)
+  }
 
   return {
     stopKeeping,
