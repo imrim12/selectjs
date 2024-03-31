@@ -88,6 +88,22 @@ export function getSelection(element?: HTMLElement): GetSelectionResult {
     return getSelectionContenteditable(_element)
 }
 
+export function getNativeSelection() {
+  const nativeSelection = window.getSelection()!
+
+  const startNode = nativeSelection.anchorNode
+  const startOffset = nativeSelection.anchorOffset
+  const endNode = nativeSelection.focusNode
+  const endOffset = nativeSelection.focusOffset
+
+  return {
+    startNode,
+    startOffset,
+    endNode,
+    endOffset,
+  }
+}
+
 export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSelectionResult): GetSelectionRectResult {
   const _element = (element || document.activeElement) as HTMLElement
   let shadowEl: HTMLElement | null = null

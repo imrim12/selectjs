@@ -25,7 +25,17 @@ export function setSelectionInputOrTextareaElement(element: HTMLInputElement | H
   return _element.value.slice(_options.start, _options.end)
 }
 
-export function setSelectionNode(node: Node, options?: SetSelectionOptions) {
+interface SetSelectionNodeOptions {
+  nativeSelection: {
+    startNode: Node | null
+    startOffset: number
+    endNode: Node | null
+    endOffset: number
+  }
+  noEffect?: boolean
+}
+
+export function setSelectionNode(options?: SetSelectionNodeOptions) {
   const _options = defu(options, {})
 
   if (_options.noEffect)
@@ -34,12 +44,16 @@ export function setSelectionNode(node: Node, options?: SetSelectionOptions) {
   const selection = window.getSelection()
   const range = document.createRange()
 
-  range.setStart(node, _options.start)
-  range.setEnd(node, _options.end)
+  if (_options.nativeSelection.startNode && _options.nativeSelection.endNode) {
+    range.setStart(_options.nativeSelection.startNode, _options.nativeSelection.startOffset)
+    range.setEnd(_options.nativeSelection.endNode, _options.nativeSelection.endOffset)
 
-  selection?.removeAllRanges()
-  selection?.addRange(range)
-  return selection?.toString()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+    return selection?.toString()
+  }
+
+  return ''
 }
 
 export function setSelectionContenteditableElement(element: HTMLElement, options?: SetSelectionOptions) {
