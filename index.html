@@ -42,7 +42,12 @@
         <path d="M1.95974 21.5099L1.93893 21.5091L1.93733 21.4874L1.95974 21.4866V21.5099Z" fill="#839BB1"/>
       </svg>
       <div id="popover" style="display: none; width: 300px; height: 200px; background-color: bisque;">
-        A large popover
+        <button id="remove">
+          Remove selection
+        </button>
+        <button id="replace">
+          Replace selection "Hello"
+        </button>
         <button id="button">
           Close the popover
         </button>
@@ -51,7 +56,7 @@
     <script type="module">
       // Just an example, this project does not depend on Vue
       import { createApp, ref, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating } from './src/index'
+      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating, removeSelectionContent } from './src/index'
 
       function waitFor(time = 0) {
         return new Promise((r) => setTimeout(r, time))
@@ -60,9 +65,9 @@
       createApp({
         setup() {
           const message = ref('Hello vue!')
-          
+
           const wait = false
-          
+
           onMounted(async () => {
             const input$ = document.querySelector('input')
             const textarea$ = document.querySelector('textarea')
@@ -81,6 +86,39 @@
             })
 
             const popover$ = document.querySelector('#popover')
+
+            const remove$ = document.querySelector('#remove')
+            const replace$ = document.querySelector('#replace')
+
+            let currentSelectedElement
+            let currentSelection
+            let currentSelectionRect
+
+            function setCurrentSelection(el, sel, rect) {
+              currentSelectedElement = el
+              currentSelection = sel
+              currentSelectionRect = rect
+            }
+
+            function handleRemove() {
+              removeSelectionContent(currentSelectedElement, {
+                start: currentSelection.start,
+                end: currentSelection.end,
+              })
+            }
+
+            let i = 0
+            function handleReplace() {
+              replaceSelectionContent(currentSelectedElement, {
+                content: "Hello " + i,
+                start: currentSelection.start,
+                end: currentSelection.end,
+              })
+              i++
+            }
+
+            remove$.addEventListener('click', handleRemove)
+            replace$.addEventListener('click', handleReplace)
 
             watchSelection(input$, (selection, selectionRect) => {
               const virtualElement = {
@@ -102,8 +140,9 @@
               attachFloating(virtualElement, tooltip$)
               attachFloating(virtualElement, popover$)
               setHighlight(input$, selectionRect.children)
+
+              setCurrentSelection(input$, selection, selectionRect)
             }, {
-              debounce: 300,
               keepInBound: [tooltip$, popover$],
               onBlur() {
                 tooltip$.style.display = 'none'
@@ -112,8 +151,33 @@
             })
 
             watchSelection(textarea$, (selection, selectionRect) => {
+              const virtualElement = {
+                getBoundingClientRect: () => {
+                  const { children } = selectionRect
+            
+                  return (children.length ? children[children.length - 1] : null)
+                },
+                getClientRects: () => {
+                  const { children } = selectionRect
+                  
+                  return (children.length ? [children[children.length - 1]] : [])
+                }
+              }
+
+              if (popover$.style.display !== 'block')
+                tooltip$.style.display = 'block'
+
+              attachFloating(virtualElement, tooltip$)
+              attachFloating(virtualElement, popover$)
               setHighlight(textarea$, selectionRect.children)
-            }, {})
+              setCurrentSelection(textarea$, selection, selectionRect)
+            }, {
+              keepInBound: [tooltip$, popover$],
+              onBlur() {
+                tooltip$.style.display = 'none'
+                popover$.style.display = 'none'
+              }
+            })
 
             watchSelection(contenteditable$, (selection, selectionRect) => {
               const virtualElement = {
@@ -135,6 +199,8 @@
               attachFloating(virtualElement, tooltip$)
               attachFloating(virtualElement, popover$)
               setHighlight(contenteditable$, selectionRect.children)
+
+              setCurrentSelection(contenteditable$, selection, selectionRect)
             }, {
               keepInBound: [tooltip$, popover$],
               onBlur() {
