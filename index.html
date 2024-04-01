@@ -121,6 +121,8 @@
             replace$.addEventListener('click', handleReplace)
 
             watchSelection(input$, (selection, selectionRect) => {
+              setCurrentSelection(input$, selection, selectionRect)
+
               const virtualElement = {
                 getBoundingClientRect: () => {
                   const { children } = selectionRect
@@ -141,7 +143,6 @@
               attachFloating(virtualElement, popover$)
               setHighlight(input$, selectionRect.children)
 
-              setCurrentSelection(input$, selection, selectionRect)
             }, {
               keepInBound: [tooltip$, popover$],
               onBlur() {
@@ -151,6 +152,8 @@
             })
 
             watchSelection(textarea$, (selection, selectionRect) => {
+              setCurrentSelection(textarea$, selection, selectionRect)
+
               const virtualElement = {
                 getBoundingClientRect: () => {
                   const { children } = selectionRect
@@ -170,7 +173,6 @@
               attachFloating(virtualElement, tooltip$)
               attachFloating(virtualElement, popover$)
               setHighlight(textarea$, selectionRect.children)
-              setCurrentSelection(textarea$, selection, selectionRect)
             }, {
               keepInBound: [tooltip$, popover$],
               onBlur() {
@@ -180,6 +182,8 @@
             })
 
             watchSelection(contenteditable$, (selection, selectionRect) => {
+              setCurrentSelection(contenteditable$, selection, selectionRect)
+
               const virtualElement = {
                 getBoundingClientRect: () => {
                   const { children } = selectionRect
@@ -199,8 +203,6 @@
               attachFloating(virtualElement, tooltip$)
               attachFloating(virtualElement, popover$)
               setHighlight(contenteditable$, selectionRect.children)
-
-              setCurrentSelection(contenteditable$, selection, selectionRect)
             }, {
               keepInBound: [tooltip$, popover$],
               onBlur() {

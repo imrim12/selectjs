@@ -1,4 +1,5 @@
-import { setSelection } from './set'
+import { getNativeSelection } from './get'
+import { setSelection, setSelectionNode } from './set'
 import { isInputOrTextarea } from './utils'
 
 interface ReplaceSelectionContentOptions {
@@ -43,6 +44,12 @@ export function replaceSelectionContent(element: HTMLElement, options: ReplaceSe
     range.insertNode(fragment)
 
     range.commonAncestorContainer.normalize()
+
+    const currentNativeSelection = getNativeSelection()
+    setSelectionNode({
+      nativeSelection: currentNativeSelection,
+      noEffect: true,
+    })
 
     return range
   }
