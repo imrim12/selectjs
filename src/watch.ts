@@ -5,6 +5,7 @@ import type { GetSelectionRectResult, GetSelectionResult } from './get'
 import { keepSelection } from './keep'
 import { debounce } from './utils'
 import { enableEffect, isEffectDisabled } from './effect'
+import { isMouseInBound, watchMouseMovement } from './mouse'
 
 export interface WatchSelectionOptions {
   keepInBound?: HTMLElement | HTMLElement[]
@@ -23,19 +24,20 @@ export function watchSelection(
 
   const _element = defineSelectable(element, _options)
 
-  let isMouseOrTouchDownOnElement = false
-  function handleMouseOrTouchDownOnElement() {
-    isMouseOrTouchDownOnElement = true
-  }
-
-  function handleMouseOrTouchUpOnElement() {
-    isMouseOrTouchDownOnElement = false
-  }
+  watchMouseMovement()
 
   let lastSelectedText = ''
   function handleSelectionChange() {
-    // `isMouseOrTouchDownOnElement` will be false if debounce has value because by that time, no mouse event is captured!
-    if (!isMouseOrTouchDownOnElement && !_options.debounce)
+    if (
+      _options.keepInBound
+      && !isMouseInBound(element)
+      && !(
+        Array.isArray(_options.keepInBound)
+          ? _options.keepInBound.some(isMouseInBound)
+          : _options.keepInBound && isMouseInBound(_options.keepInBound)
+      )
+      && !_options.debounce
+    )
       return
 
     if (isEffectDisabled()) {
@@ -44,7 +46,7 @@ export function watchSelection(
       return
     }
 
-    const selection = getSelection(element)
+    const selection = getSelection(_element)
 
     if (!selection.text)
       return
@@ -54,28 +56,23 @@ export function watchSelection(
 
     lastSelectedText = selection.text
 
-    const selectionRect = getSelectionRect(element)
+    const selectionRect = getSelectionRect(_element)
 
     callback(selection, selectionRect)
   }
   const debouncedHandleSelectionChange = _options.debounce ? debounce(handleSelectionChange, _options.debounce) : handleSelectionChange
 
-  _element.addEventListener('mousedown', handleMouseOrTouchDownOnElement)
-  _element.addEventListener('mouseup', handleMouseOrTouchUpOnElement)
-  _element.addEventListener('touchstart', handleMouseOrTouchDownOnElement)
-  _element.addEventListener('touchend', handleMouseOrTouchUpOnElement)
-
   document.addEventListener('selectionchange', debouncedHandleSelectionChange)
 
   let stopKeeping: null | (() => void) = null
   if (_options.keepInBound) {
-    stopKeeping = keepSelection(element, {
+    stopKeeping = keepSelection(_element, {
       withinBound: _options.keepInBound,
       onBlur: _options.onBlur,
     }).stop
   }
   else if (_options.onBlur) {
-    element.addEventListener('blur', _options.onBlur)
+    _element.addEventListener('blur', _options.onBlur)
   }
 
   return {
