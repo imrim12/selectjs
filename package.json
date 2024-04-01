@@ -1,7 +1,7 @@
 {
   "name": "@selectjs/core",
   "type": "module",
-  "version": "0.0.1-rc.4",
+  "version": "0.0.1-rc.5",
   "description": "A package to enhance your selection experience, using the Selection API and Range API.",
   "author": "Nguyễn Hữu Nguyên Ý <nguyenhuunguyeny.ny@gmail.com>",
   "homepage": "https://github.com/imrim12/selectjs",
