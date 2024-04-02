@@ -11,7 +11,7 @@ export interface FloatingOptions {
   offset?: OffsetOptions
 }
 
-export function attachFloating(virtualElement: VirtualElement, tooltipElement: HTMLElement, options: FloatingOptions) {
+export function attachFloating(virtualElement: VirtualElement, tooltipElement: HTMLElement, options?: FloatingOptions) {
   const _options = defu(options, {
     offset: {
       mainAxis: 4,
