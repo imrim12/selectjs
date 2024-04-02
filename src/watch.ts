@@ -48,9 +48,6 @@ export function watchSelection(
 
     const selection = getSelection(_element)
 
-    if (!selection.text)
-      return
-
     if (selection.text === lastSelectedText)
       return
 
