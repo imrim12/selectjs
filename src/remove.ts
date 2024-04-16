@@ -1,8 +1,21 @@
+import { disableEffect, enableEffect } from './effect'
 import { isInputOrTextarea } from './utils'
 
 interface RemoveSelectionContentOptions {
   start: number
   end: number
+}
+
+export function removeSelection(element: HTMLElement) {
+  disableEffect()
+
+  element.blur()
+
+  const selection = window.getSelection()
+
+  selection?.removeAllRanges()
+
+  enableEffect()
 }
 
 export function removeSelectionContent(element: HTMLElement, options: RemoveSelectionContentOptions) {

@@ -24,7 +24,7 @@ export interface SetHighlightOptions {
 export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetHighlightOptions) {
   const _options = defu(options, {
     stroke: 2,
-    color: '#25C9D0',
+    color: '#6EF910',
     blendMode: 'normal',
     container: element.parentElement || document,
     position: 'absolute' as const,

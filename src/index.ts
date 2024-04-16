@@ -1,3 +1,5 @@
+export * from './collapse'
+
 export * from './define'
 
 export * from './effect'
