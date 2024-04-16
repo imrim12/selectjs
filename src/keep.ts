@@ -3,7 +3,8 @@ import defu from 'defu'
 import { getNativeSelection, getSelection } from './get'
 import { setSelection, setSelectionNode } from './set'
 import { isInputOrTextarea } from './utils'
-import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './mouse'
+import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './pointer/mouse'
+import { isEffectDisabled } from './effect'
 import type { Arrayable } from '.'
 
 export interface KeepSelectionOptions {
@@ -33,6 +34,7 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
         && !isMouseInElement(element, { border: _options.boundBorder })
         && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
       )
+      || isEffectDisabled()
     ) {
       _options.onBlur?.(e)
 

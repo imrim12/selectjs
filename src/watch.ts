@@ -5,7 +5,7 @@ import type { GetSelectionRectResult, GetSelectionResult } from './get'
 import { keepSelection } from './keep'
 import { debounce, isInputOrTextarea } from './utils'
 import { enableEffect, isEffectDisabled } from './effect'
-import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './mouse'
+import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './pointer/mouse'
 import type { Arrayable } from '.'
 
 export interface WatchSelectionOptions {

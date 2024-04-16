@@ -4,44 +4,72 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>SelectJS Playground</title>
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <style>
+      .el-collapse-item__header {
+        --el-collapse-header-font-size: 8px;
+        --el-collapse-header-height: 48px;
+        
+        line-height: 8px !important;
+        text-align: left;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="text/html" id="replace-app">
       <h1>SelectJS playground</h1>
-      <div style="margin-bottom: 1rem;">
-        <label>
-          Input:
-          <input type="text" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
-        </label>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <label>
-          Textarea:
-          <textarea cols="32" rows="5">Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives.</textarea>
-        </label>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <label>
-          Editor with contenteditable:
-          <div contenteditable style="max-width: 400px">
-            <p>
-              <strong>Cats,</strong> those <em>mysterious and elegant creatures</em>, have a way of
-              walking into our lives and hearts with their soft paws and gentle purrs. Known for
-              their <span style="color: #0077CC;">independent spirit</span> and
-              <span style="color: #DAA520;">playful antics</span>, they offer companionship
-              that's both soothing and amusing. Whether basking in a sunny spot or chasing after a
-              laser pointer, cats embody a unique blend of serenity and excitement. Their ability
-              to find joy in the simplest of activities - be it a cardboard box or a crumpled piece
-              of paper - reminds us to appreciate the small wonders in our daily lives. With eyes
-              that hold the wisdom of the ages and a demeanor that ranges from aloof to
-              affectionate, cats are not just pets; they are
-              <span style="font-weight:bold; color: #FF4500;">mystical companions</span> on our
-              journey through life, teaching us the art of living gracefully and independently.
-            </p>
+      <div style="display: flex;">
+        <div style="flex: 1;">
+          <div style="margin-bottom: 1rem;">
+            <label>
+              Input:
+              <input type="text" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
+            </label>
           </div>
-        </label>
+          <div style="margin-bottom: 1rem;">
+            <label>
+              Textarea:
+              <textarea cols="32" rows="5">Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives.</textarea>
+            </label>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label>
+              Editor with contenteditable:
+              <div contenteditable style="max-width: 400px">
+                <p>
+                  <strong>Cats,</strong> those <em>mysterious and elegant creatures</em>, have a way of
+                  walking into our lives and hearts with their soft paws and gentle purrs. Known for
+                  their <span style="color: #0077CC;">independent spirit</span> and
+                  <span style="color: #DAA520;">playful antics</span>, they offer companionship
+                  that's both soothing and amusing. Whether basking in a sunny spot or chasing after a
+                  laser pointer, cats embody a unique blend of serenity and excitement. Their ability
+                  to find joy in the simplest of activities - be it a cardboard box or a crumpled piece
+                  of paper - reminds us to appreciate the small wonders in our daily lives. With eyes
+                  that hold the wisdom of the ages and a demeanor that ranges from aloof to
+                  affectionate, cats are not just pets; they are
+                  <span style="font-weight:bold; color: #FF4500;">mystical companions</span> on our
+                  journey through life, teaching us the art of living gracefully and independently.
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div style="max-height: 500px; flex: 1; padding: 1rem; overflow-y: auto;">
+          <el-collapse v-model="activeName" accordion>
+            <el-collapse-item v-for="(item, i) in logs" :key="'select-' + i" :title="item.selection.text || '<EMPTY TEXT>'" :name="i">
+              <div style="max-height: 150px; overflow-y: auto;">
+                <p style="background-color: rgb(206, 206, 206); padding: 2px 8px; font-size: 8px;">
+                  <b><code>{{ item.selectionRect.rect }}</code></b>
+                </p>
+                <p v-for="(child, j) in item.selectionRect.children" :key="'rect-' + j" style="background-color: rgb(241, 241, 241); padding: 2px 8px; font-size: 8px;">
+                  <code>{{ child }}</code>
+                </p>
+              </div>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
       </div>
       <!-- Pencil icon -->
       <svg
@@ -70,15 +98,24 @@
         <button id="replace" @click="handleReplace">
           Replace
         </button>
+        <button id="button" @click="handleBlurOut">
+          Blur out element (remove selection)
+        </button>
+        <button id="button" @click="handleCollapse">
+          Collapse selection
+        </button>
         <button id="button" @click="handleClose">
           Close the popover
         </button>
       </div>
     </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="//unpkg.com/element-plus"></script>
     <script type="module">
       // Just an example, this project does not depend on Vue
-      import { createApp, ref, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating, removeSelectionContent } from './src/index'
+      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating, removeSelectionContent, removeSelection, collapseToEnd } from './src/index'
+
+      const { createApp, ref, onMounted } = Vue
 
       const OPENAI_PROMPT = {
         model: "gpt-3.5-turbo",
@@ -142,14 +179,17 @@
         OPENMENU: 3,
       }
 
-      createApp({
+      const app = createApp({
         template: '#replace-app',
         setup() {
           const tooltipRef = ref()
           const popoverRef = ref()
           
+          const logs = ref([])
+          
           const status = ref(SelectionState.INITIAL)
           const message = ref('Hello vue!')
+          const activeName = ref()
 
           const wait = false
 
@@ -184,6 +224,14 @@
             i++
           }
           
+          function handleBlurOut() {
+            removeSelection(currentSelectedElement)
+          }
+
+          function handleCollapse() {
+            collapseToEnd()
+          }
+          
           function handleOpenMenu() {
             status.value = SelectionState.OPENMENU
           }
@@ -205,6 +253,11 @@
               watchSelection(element, (selection, selectionRect) => {
                 status.value = SelectionState.INITIAL
                 setCurrentSelection(element, selection, selectionRect)
+
+                logs.value.push({
+                  selection,
+                  selectionRect
+                })
   
                 const virtualElement = {
                   getBoundingClientRect: () => {
@@ -237,6 +290,8 @@
           })
 
           return {
+            activeName,
+            logs,
             tooltipRef,
             popoverRef,
             message,
@@ -244,10 +299,15 @@
             handleOpenMenu,
             handleClose,
             handleRemove,
-            handleReplace
+            handleReplace,
+            handleBlurOut,
+            handleCollapse
           }
         }
-      }).mount('#app')
+      })
+
+      app.use(ElementPlus)
+      app.mount('#app')
     </script>
   </body>
 </html>

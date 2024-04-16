@@ -1,5 +1,5 @@
 import defu from 'defu'
-import type { Arrayable } from '.'
+import type { Arrayable } from '..'
 
 let mouseX = 0
 let mouseY = 0
