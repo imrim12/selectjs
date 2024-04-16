@@ -1,7 +1,7 @@
 {
   "name": "@selectjs/core",
   "type": "module",
-  "version": "0.0.1-rc.8",
+  "version": "0.0.1-rc.9",
   "description": "A package to enhance your selection experience, using the Selection API and Range API.",
   "author": "Nguyễn Hữu Nguyên Ý <nguyenhuunguyeny.ny@gmail.com>",
   "homepage": "https://github.com/imrim12/selectjs",
@@ -25,7 +25,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "prepack": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
