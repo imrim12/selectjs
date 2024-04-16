@@ -19,3 +19,5 @@ export * from './set'
 export * from './utils'
 
 export * from './watch'
+
+export type Arrayable<T> = T | T[]

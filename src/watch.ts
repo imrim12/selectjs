@@ -3,12 +3,14 @@ import { defineSelectable } from './define'
 import { getSelection, getSelectionRect } from './get'
 import type { GetSelectionRectResult, GetSelectionResult } from './get'
 import { keepSelection } from './keep'
-import { debounce } from './utils'
+import { debounce, isInputOrTextarea } from './utils'
 import { enableEffect, isEffectDisabled } from './effect'
-import { isMouseInBound, watchMouseMovement } from './mouse'
+import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './mouse'
+import type { Arrayable } from '.'
 
 export interface WatchSelectionOptions {
-  keepInBound?: HTMLElement | HTMLElement[]
+  keepInBound?: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
+  boundBorder?: number
   debounce?: number
   onBlur?: (e: FocusEvent) => void
 }
@@ -20,22 +22,26 @@ export function watchSelection(
 ) {
   const _options = defu(options, {
     debounce: 0,
+    boundBorder: 0,
   })
 
-  const _element = defineSelectable(element, _options)
+  const _element = defineSelectable(element)
 
   watchMouseMovement()
 
   let lastSelectedText = ''
   function handleSelectionChange() {
+    const nativeSelection = window.getSelection()
+    const range = nativeSelection?.getRangeAt(0)
+
+    // Prevent event running if the selection is not in the current element (selectionchange is listened on all document!)
+    if (!isInputOrTextarea(_element) && !_element.contains(range!.commonAncestorContainer))
+      return
+
     if (
       _options.keepInBound
-      && !isMouseInBound(element)
-      && !(
-        Array.isArray(_options.keepInBound)
-          ? _options.keepInBound.some(isMouseInBound)
-          : _options.keepInBound && isMouseInBound(_options.keepInBound)
-      )
+      && !isMouseInElement(element, { border: _options.boundBorder })
+      && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
       && !_options.debounce
     )
       return
@@ -64,7 +70,7 @@ export function watchSelection(
   let stopKeeping: null | (() => void) = null
   if (_options.keepInBound) {
     stopKeeping = keepSelection(_element, {
-      withinBound: _options.keepInBound,
+      keepInBound: _options.keepInBound,
       onBlur: _options.onBlur,
     }).stop
   }

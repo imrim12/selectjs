@@ -5,13 +5,15 @@ import { getProp } from './define'
 
 export interface SetHighlightOptions {
   class?: string
-  stroke?: number
+  stroke?: number | 'full'
   color?: string
+  blendMode?: string
   container?: HTMLElement
   position?: 'fixed' | 'absolute'
   offsetX?: number
   offsetY?: number
   duration?: number
+  interactive?: boolean
 }
 
 /**
@@ -22,12 +24,14 @@ export interface SetHighlightOptions {
 export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetHighlightOptions) {
   const _options = defu(options, {
     stroke: 2,
-    color: '#3fba54',
+    color: '#25C9D0',
+    blendMode: 'normal',
     container: element.parentElement || document,
     position: 'absolute' as const,
     offsetX: 0,
     offsetY: 0,
     duration: 300,
+    interactive: false,
   })
   const selectableId = getProp(element, 'id')
 
@@ -49,7 +53,7 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
     div.setAttribute('data-selectable-highlight-for', selectableId)
     div.setAttribute('data-selectable-highlight-id', i.toString())
 
-    div.style.top = `${rect.top + rect.height + _options.offsetY + scrollY}px`
+    div.style.top = `${rect.top + (_options.stroke === 'full' ? 0 : rect.height) + _options.offsetY + scrollY}px`
     div.style.left = `${rect.left + _options.offsetX + scrollX}px`
     div.style.width = `${rect.width}px`
 
@@ -57,14 +61,18 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
       div.classList.add(_options.class)
     }
     else {
-      div.style.height = `${_options.stroke}px`
+      div.style.height = _options.stroke === 'full' ? `${rect.height}px` : `${_options.stroke}px`
       div.style.backgroundColor = `${_options.color}`
       div.style.position = _options.position
       div.style.userSelect = 'none'
+      div.style.mixBlendMode = _options.blendMode
       div.style.transitionDuration = `${_options.duration}ms`
       div.style.transitionProperty = 'opacity'
       div.style.opacity = '1'
     }
+
+    if (!_options.interactive)
+      div.style.pointerEvents = 'none'
 
     _options.container.appendChild(div)
     highlights.push(div)
