@@ -1,11 +1,11 @@
-import defu from 'defu'
+// import defu from 'defu'
 
-interface DefineSelectableOptions {}
+// interface DefineSelectableOptions {}
 
 let i: number = 0
 
-export function defineSelectable<T extends HTMLElement>(element: T, options?: DefineSelectableOptions) {
-  const _options = defu(options, {})
+export function defineSelectable<T extends HTMLElement>(element: T /* options?: DefineSelectableOptions */) {
+  // const _options = defu(options, {})
 
   element.normalize()
 

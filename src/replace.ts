@@ -16,10 +16,13 @@ export function replaceSelectionContent(element: HTMLElement, options: ReplaceSe
 
     _inputOrTextarea.value = textBefore + options.content + textAfter
 
+    element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }))
+    element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+
     setSelection(_inputOrTextarea, {
       start: textBefore.length,
       end: textBefore.length + options.content.length,
-      noEffect: true,
+      // noEffect: true,
     })
   }
   else {
@@ -44,6 +47,8 @@ export function replaceSelectionContent(element: HTMLElement, options: ReplaceSe
     range.insertNode(fragment)
 
     range.commonAncestorContainer.normalize()
+
+    element.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true }))
 
     const currentNativeSelection = getNativeSelection()
     setSelectionNode({

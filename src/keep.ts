@@ -3,10 +3,12 @@ import defu from 'defu'
 import { getNativeSelection, getSelection } from './get'
 import { setSelection, setSelectionNode } from './set'
 import { isInputOrTextarea } from './utils'
-import { isMouseInBound, watchMouseMovement } from './mouse'
+import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './mouse'
+import type { Arrayable } from '.'
 
 export interface KeepSelectionOptions {
-  withinBound?: HTMLElement | HTMLElement[]
+  keepInBound?: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
+  boundBorder?: number
   onBlur?: ((e: FocusEvent) => void)
 }
 
@@ -15,7 +17,9 @@ export interface KeepSelectionOptions {
  *
  */
 export function keepSelection(element: HTMLElement, options?: KeepSelectionOptions) {
-  const _options = defu(options, {})
+  const _options = defu(options, {
+    boundBorder: 0,
+  })
 
   watchMouseMovement()
 
@@ -25,13 +29,9 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
     if (
       !currentSelection.text
       || (
-        _options.withinBound
-        && !isMouseInBound(element)
-        && !(
-          Array.isArray(_options.withinBound)
-            ? _options.withinBound.some(isMouseInBound)
-            : isMouseInBound(_options.withinBound)
-        )
+        _options.keepInBound
+        && !isMouseInElement(element, { border: _options.boundBorder })
+        && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
       )
     ) {
       _options.onBlur?.(e)

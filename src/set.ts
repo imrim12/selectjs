@@ -7,6 +7,7 @@ import { disableEffect } from './effect'
 export interface SetSelectionOptions {
   start: number
   end: number
+  direction?: 'forward' | 'backward' | 'none'
   noEffect?: boolean
 }
 
@@ -20,7 +21,7 @@ export function setSelectionInputOrTextareaElement(element: HTMLInputElement | H
 
   _element.focus()
 
-  _element.setSelectionRange(_options.start, _options.end, 'none')
+  _element.setSelectionRange(_options.start, _options.end, _options.direction || 'none')
 
   return _element.value.slice(_options.start, _options.end)
 }
@@ -118,10 +119,13 @@ export function setSelection(element: HTMLElement, options: SetSelectionOptions)
 
   _element.focus()
 
-  if (isInputOrTextarea(_element))
-    selectedText = setSelectionInputOrTextareaElement(_element as HTMLInputElement | HTMLTextAreaElement, { start: _options.start, end: _options.end, noEffect: _options.noEffect })
-  else
-    selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end, noEffect: _options.noEffect })
+  if (isInputOrTextarea(_element)) {
+    selectedText = setSelectionInputOrTextareaElement(
+      _element as HTMLInputElement | HTMLTextAreaElement,
+      { start: _options.start, end: _options.end, direction: _options.direction, noEffect: _options.noEffect },
+    )
+  }
+  else { selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end, noEffect: _options.noEffect }) }
 
   return selectedText
 }

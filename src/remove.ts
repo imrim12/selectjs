@@ -13,6 +13,9 @@ export function removeSelectionContent(element: HTMLElement, options: RemoveSele
     const afterSelection = _inputOrTextarea.value.substring(options.end, _inputOrTextarea.value.length)
 
     _inputOrTextarea.value = beforeSelection + afterSelection
+
+    element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }))
+    element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
   }
   else {
     const selection = window.getSelection()
@@ -21,6 +24,8 @@ export function removeSelectionContent(element: HTMLElement, options: RemoveSele
 
     const range = selection.getRangeAt(0)
     range.deleteContents()
+
+    element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }))
 
     return range
   }

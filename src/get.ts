@@ -1,5 +1,5 @@
 import { setSelection, setSelectionContenteditableElement } from './set'
-import { isInputOrTextarea, shadowElement } from './utils'
+import { clampRect, createRelativeRect, isInput, isInputOrTextarea, shadowElement } from './utils'
 
 export interface GetSelectionResult {
   text: string
@@ -72,7 +72,7 @@ export function getSelectionContenteditable(element: HTMLElement): GetSelectionR
   tempDiv.appendChild(clonedSelection)
 
   return {
-    text: tempDiv.innerHTML || '',
+    text: tempDiv.innerHTML || range?.toString() || tempDiv.textContent || '',
     start,
     end,
     direction: 'none' as const,
@@ -109,6 +109,7 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
   let shadowEl: HTMLElement | null = null
   let selectedEnd = 0
   let selectedStart = 0
+  let selectedDirection: 'forward' | 'backward' | 'none' | null = 'none'
 
   if (currentSelection) {
     selectedStart = currentSelection.start
@@ -123,6 +124,7 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
 
       selectedStart = _inputOrTextareaSelection.start
       selectedEnd = _inputOrTextareaSelection.end
+      selectedDirection = _inputOrTextareaSelection.direction
     }
 
     shadowEl = shadowElement(_inputOrTextareaElement)
@@ -132,21 +134,35 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
     setSelectionContenteditableElement(shadowEl, {
       start: selectedStart,
       end: selectedEnd,
+      direction: selectedDirection || 'none',
       noEffect: true,
     })
   }
   else if (!currentSelection) {
-    const { start, end } = getSelectionContenteditable(_element)
+    const { start, end, direction } = getSelectionContenteditable(_element)
 
     selectedStart = start
     selectedEnd = end
+    selectedDirection = direction
   }
 
   const selection = window.getSelection()
   const range = selection?.getRangeAt(0)
 
-  const rect = range?.getBoundingClientRect().toJSON() as Rect | null
-  const rects = Array.from(range?.getClientRects() || []).map(r => r.toJSON() as Rect | null)
+  const rect = clampRect(
+    range?.getBoundingClientRect().toJSON(),
+    _element?.getBoundingClientRect().toJSON(),
+  )
+
+  const rects = Array.from(range?.getClientRects() || []).map((rect) => {
+    let _rect = rect.toJSON()
+    if (!isInput(_element))
+      _rect = createRelativeRect(_rect, _element.scrollLeft, _element.scrollTop)
+
+    _rect = clampRect(_rect, _element.getBoundingClientRect().toJSON())
+
+    return _rect
+  })
 
   const rectTop = rects[0]
   const rectBottom = rects[rects.length - 1]
@@ -160,6 +176,7 @@ export function getSelectionRect(element?: HTMLElement, currentSelection?: GetSe
     setSelection(_element, {
       start: selectedStart,
       end: selectedEnd,
+      direction: selectedDirection || 'none',
       noEffect: true,
     })
   }
