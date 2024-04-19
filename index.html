@@ -19,25 +19,51 @@
   <body>
     <div id="app"></div>
     <script type="text/html" id="replace-app">
-      <h1>SelectJS playground</h1>
+      <h1>SelectJS Vue 3 playground</h1>
+      <nav>
+        <a href="/">Vue 3</a>
+        <a href="/examples/vue2">Vue 2</a>
+      </nav>
+      <div style="height: 170px">
+        X: <span id="x">0</span> <br />
+        Y: <span id="y">0</span> <br />
+        target: <span id="target"></span> <br />
+        scrollLeft: <span id="scrollLeft"></span> <br />
+        scrollTop: <span id="scrollTop"></span> <br />
+        scrollWidth: <span id="scrollWidth"></span> <br />
+        scrollHeight: <span id="scrollHeight"></span> <br />
+        selectionDirection: <span id="selectionDirection"></span>
+      </div>
       <div style="display: flex;">
         <div style="flex: 1;">
           <div style="margin-bottom: 1rem;">
             <label>
               Input:
-              <input type="text" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
+              <input id="input" type="text" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
+            </label>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label>
+              ElInput:
+              <el-input ref="inputRef" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
             </label>
           </div>
           <div style="margin-bottom: 1rem;">
             <label>
               Textarea:
-              <textarea cols="32" rows="5">Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives.</textarea>
+              <textarea id="textarea" cols="32" rows="5">Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives.</textarea>
+            </label>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label>
+              ElInput Textarea:
+              <el-input ref="textareaRef" type="textarea" cols="32" rows="5" value="Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives." />
             </label>
           </div>
           <div style="margin-bottom: 1rem;">
             <label>
               Editor with contenteditable:
-              <div contenteditable style="max-width: 400px">
+              <div id="contenteditable" contenteditable style="max-width: 400px">
                 <p>
                   <strong>Cats,</strong> those <em>mysterious and elegant creatures</em>, have a way of
                   walking into our lives and hearts with their soft paws and gentle purrs. Known for
@@ -113,7 +139,7 @@
     <script src="//unpkg.com/element-plus"></script>
     <script type="module">
       // Just an example, this project does not depend on Vue
-      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating, removeSelectionContent, removeSelection, collapseToEnd } from './src/index'
+      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating, removeSelectionContent, removeSelection, collapseToEnd, getMousePos } from './src/index'
 
       const { createApp, ref, onMounted } = Vue
 
@@ -182,6 +208,9 @@
       const app = createApp({
         template: '#replace-app',
         setup() {
+          const inputRef = ref()
+          const textareaRef = ref()
+
           const tooltipRef = ref()
           const popoverRef = ref()
           
@@ -241,17 +270,36 @@
           }
 
           onMounted(async () => {
-            const input$ = document.querySelector('input')
-            const textarea$ = document.querySelector('textarea')
-            const contenteditable$ = document.querySelector('[contenteditable]')
+            document.addEventListener('mousemove', (e) => {
+              const mousePos = getMousePos()
+
+              document.getElementById('x').innerText = mousePos.x
+              document.getElementById('y').innerText = mousePos.y
+
+              document.getElementById('target').innerText =
+                e.target.id || e.target.tagName
+
+              document.getElementById('scrollLeft').innerText = e.target.scrollLeft
+              document.getElementById('scrollTop').innerText = e.target.scrollTop
+              document.getElementById('scrollWidth').innerText = e.target.scrollWidth
+              document.getElementById('scrollHeight').innerText =
+                e.target.scrollHeight
+            })
+
+            const input$ = document.querySelector('#input')
+            const textarea$ = document.querySelector('#textarea')
+            const contenteditable$ = document.querySelector('#contenteditable')
 
             ;[
+              inputRef.value.$el.querySelector('input'),
+              textareaRef.value.$el.querySelector('textarea'),
               input$,
               textarea$,
               contenteditable$
             ].forEach((element) => {
               watchSelection(element, (selection, selectionRect) => {
-                status.value = SelectionState.INITIAL
+                if (!selection.text)
+                  status.value = SelectionState.INITIAL
                 setCurrentSelection(element, selection, selectionRect)
 
                 logs.value.push({
@@ -292,6 +340,8 @@
           return {
             activeName,
             logs,
+            inputRef,
+            textareaRef,
             tooltipRef,
             popoverRef,
             message,

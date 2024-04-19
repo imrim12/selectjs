@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SelectJS Playground</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+      .el-collapse-item__header {
+        line-height: 8px !important;
+        font-size: 8px !important;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="text/html" id="replace-app">
+      <div>
+        <h1>SelectJS Vue 2 playground</h1>
+        <nav>
+          <a href="/">Vue 3</a>
+          <a href="/examples/vue2">Vue 2</a>
+        </nav>
+        <div style="height: 170px">
+          X: <span id="x">0</span> <br />
+          Y: <span id="y">0</span> <br />
+          target: <span id="target"></span> <br />
+          scrollLeft: <span id="scrollLeft"></span> <br />
+          scrollTop: <span id="scrollTop"></span> <br />
+          scrollWidth: <span id="scrollWidth"></span> <br />
+          scrollHeight: <span id="scrollHeight"></span> <br />
+          selectionDirection: <span id="selectionDirection"></span>
+        </div>
+        <div style="display: flex;">
+          <div style="flex: 1;">
+            <div style="margin-bottom: 1rem;">
+              <label>
+                Input:
+                <input id="input" type="text" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
+              </label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label>
+                ElInput:
+                <el-input ref="inputRef" value="Cats: independent, curious, comforting. They navigate life with grace, teaching us to cherish moments of playfulness and peace alike." />
+              </label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label>
+                Textarea:
+                <textarea id="textarea" cols="32" rows="5">Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives.</textarea>
+              </label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label>
+                ElInput Textarea:
+                <el-input ref="textareaRef" type="textarea" cols="32" rows="5" value="Cats are enigmatic creatures, offering both companionship and independence. They charm us with their antics and comfort us with purrs, teaching the value of curiosity and resilience in our own lives." />
+              </label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label>
+                Editor with contenteditable:
+                <div id="contenteditable" contenteditable style="max-width: 400px">
+                  <p>
+                    <strong>Cats,</strong> those <em>mysterious and elegant creatures</em>, have a way of
+                    walking into our lives and hearts with their soft paws and gentle purrs. Known for
+                    their <span style="color: #0077CC;">independent spirit</span> and
+                    <span style="color: #DAA520;">playful antics</span>, they offer companionship
+                    that's both soothing and amusing. Whether basking in a sunny spot or chasing after a
+                    laser pointer, cats embody a unique blend of serenity and excitement. Their ability
+                    to find joy in the simplest of activities - be it a cardboard box or a crumpled piece
+                    of paper - reminds us to appreciate the small wonders in our daily lives. With eyes
+                    that hold the wisdom of the ages and a demeanor that ranges from aloof to
+                    affectionate, cats are not just pets; they are
+                    <span style="font-weight:bold; color: #FF4500;">mystical companions</span> on our
+                    journey through life, teaching us the art of living gracefully and independently.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div style="max-height: 500px; flex: 1; padding: 1rem; overflow-y: auto;">
+            <el-collapse v-model="activeName" accordion>
+              <el-collapse-item v-for="(item, i) in logs" :key="'select-' + i" :title="item.selection.text || '<EMPTY TEXT>'" :name="i">
+                <div style="max-height: 150px; overflow-y: auto;">
+                  <p style="background-color: rgb(206, 206, 206); padding: 2px 8px; font-size: 8px;">
+                    <b><code>{{ item.selectionRect.rect }}</code></b>
+                  </p>
+                  <p v-for="(child, j) in item.selectionRect.children" :key="'rect-' + j" style="background-color: rgb(241, 241, 241); padding: 2px 8px; font-size: 8px;">
+                    <code>{{ child }}</code>
+                  </p>
+                </div>
+              </el-collapse-item>
+            </el-collapse>
+          </div>
+        </div>
+        <!-- Pencil icon -->
+        <svg
+          v-show="status === 2"
+          ref="tooltipRef"
+          id="tooltip" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+          style="cursor: pointer;"
+          @click="handleOpenMenu"
+        >
+          <path d="M23.3595 5.09112C23.2443 5.23331 23.2603 5.41647 23.2099 5.57955C23.0193 6.1909 22.6872 6.71066 22.2373 7.16134C17.5545 11.8601 12.8718 16.5597 8.19061 21.2601C8.02491 21.4272 7.8368 21.5372 7.60787 21.6007C5.4554 22.196 3.30534 22.8001 1.15367 23.397C0.337987 23.6235 -0.171113 23.1206 0.0530189 22.3052C0.646168 20.145 1.24812 17.9872 1.84047 15.827C1.90611 15.5868 2.02218 15.3892 2.19588 15.2157C6.87944 10.5177 11.5582 5.81413 16.2474 1.12178C17.7498 -0.381279 19.9295 -0.367622 21.4384 1.12499C21.7058 1.3893 21.9667 1.65922 22.2333 1.92272C22.7896 2.47301 23.1586 3.12372 23.2987 3.89895C23.2923 3.98973 23.2571 4.08693 23.3603 4.1504L23.3595 5.09112ZM1.95974 21.5099C3.2413 21.1548 4.52125 20.7981 5.80361 20.4479C5.99572 20.3949 6.06856 20.3603 5.88445 20.1788C5.00073 19.3079 4.12742 18.4267 3.25571 17.5438C3.12043 17.4072 3.06039 17.3606 2.99715 17.5984C2.65055 18.8966 2.29194 20.1916 1.93733 21.4874L1.93893 21.5091L1.95974 21.5099ZM19.1899 7.93496C19.1194 7.85704 19.061 7.78634 18.9962 7.72047C17.8923 6.61185 16.7837 5.50725 15.6878 4.3906C15.5061 4.20583 15.4101 4.20422 15.226 4.38979C11.499 8.14142 7.76636 11.8874 4.02816 15.6286C3.85606 15.8005 3.84806 15.8937 4.02576 16.0696C5.13121 17.1622 6.23026 18.2612 7.3165 19.3722C7.51582 19.5763 7.61988 19.5754 7.82079 19.3722C10.1982 16.971 12.586 14.5794 14.9714 12.1847C16.3114 10.8399 17.6506 9.49506 18.9906 8.15026C19.0554 8.08519 19.1162 8.01449 19.1899 7.93496ZM18.8273 1.62789C18.5015 1.61102 18.1717 1.68412 17.8667 1.86568C17.3936 2.14765 17.0534 2.57744 16.666 2.95341C16.5563 3.05945 16.67 3.1197 16.73 3.18076C16.9414 3.39766 17.1559 3.61055 17.3696 3.82424C18.2974 4.75532 19.2275 5.68318 20.1497 6.62069C20.2889 6.76208 20.3714 6.78537 20.5131 6.62631C20.762 6.34594 21.0462 6.09691 21.2927 5.81413C21.8891 5.12968 21.9187 4.06685 21.3584 3.35749C20.9765 2.87388 20.5323 2.4457 20.0632 2.04804C19.7166 1.75401 19.31 1.61423 18.8273 1.62789Z" fill="#161823"/>
+          <path d="M23.3595 4.14959C23.2571 4.08613 23.2915 3.98812 23.2979 3.89815C23.3187 3.89815 23.3387 3.89815 23.3595 3.89895V4.14959Z" fill="#839BB1"/>
+          <path d="M19.1907 7.93416C19.117 8.01369 19.0562 8.08438 18.9914 8.14946C17.6522 9.49506 16.3122 10.8391 14.9722 12.1839C12.5868 14.5778 10.199 16.9694 7.82159 19.3714C7.61987 19.5746 7.51661 19.5754 7.3173 19.3714C6.23026 18.2604 5.13201 17.1614 4.02656 16.0688C3.84885 15.8929 3.85686 15.8005 4.02896 15.6278C7.76636 11.8866 11.4998 8.14062 15.2268 4.38899C15.4109 4.20342 15.5069 4.20502 15.6886 4.38979C16.7845 5.50645 17.8931 6.61105 18.997 7.71966C19.0618 7.78474 19.121 7.85623 19.1907 7.93416Z" fill="#00EED0"/>
+          <path d="M18.8273 1.62789C19.3092 1.61343 19.7166 1.75321 20.0632 2.04804C20.5323 2.4457 20.9765 2.87388 21.3584 3.35749C21.9187 4.06685 21.8891 5.12968 21.2927 5.81413C21.0462 6.09691 20.762 6.34594 20.5131 6.62631C20.3714 6.78537 20.2889 6.76208 20.1497 6.62069C19.2283 5.68398 18.2974 4.75532 17.3696 3.82424C17.1559 3.61055 16.9414 3.39766 16.73 3.18076C16.67 3.1197 16.5563 3.05945 16.666 2.95341C17.0534 2.57744 17.3936 2.14765 17.8667 1.86568C18.1717 1.68412 18.5015 1.61102 18.8273 1.62789Z" fill="#00ABE9"/>
+          <path d="M1.93733 21.4874C2.29194 20.1916 2.65055 18.8966 2.99715 17.5984C3.06039 17.3606 3.12043 17.4072 3.25571 17.5438C4.12742 18.4267 5.00073 19.3079 5.88445 20.1788C6.06936 20.3611 5.99652 20.3957 5.80361 20.4479C4.52125 20.7981 3.2405 21.1556 1.95974 21.5099V21.4866L1.93733 21.4874Z" fill="#FDDB41"/>
+          <path d="M1.95974 21.5099L1.93893 21.5091L1.93733 21.4874L1.95974 21.4866V21.5099Z" fill="#839BB1"/>
+        </svg>
+        <div
+          v-show="status === 3"
+          ref="popoverRef"
+          id="popover"
+          style="width: 300px; height: 200px; background-color: bisque;"
+        >
+          <button id="remove" @click="handleRemove">
+            Remove selection
+          </button>
+          <button id="replace" @click="handleReplace">
+            Replace
+          </button>
+          <button id="button" @click="handleBlurOut">
+            Blur out element (remove selection)
+          </button>
+          <button id="button" @click="handleCollapse">
+            Collapse selection
+          </button>
+          <button id="button" @click="handleClose">
+            Close the popover
+          </button>
+        </div>
+      </div>
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+    <script type="module">
+      // Just an example, this project does not depend on Vue
+      import { setSelection, getSelectionRect, setHighlight, replaceSelectionContent, watchSelection, attachFloating, removeSelectionContent, removeSelection, collapseToEnd, getMousePos } from '../src/index'
+
+      const { ref, onMounted } = Vue
+
+      const OPENAI_PROMPT = {
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a paragraph rephraser, but only response with the newly replaced text, not the whole paragraph"
+          },
+          {
+            role: "system",
+            content: `For example:
+              Full Paragraph: Hi! I'm a cat
+              Replace: cat
+              will result in "kitten", not the whole paragraph
+            `
+          }
+        ]
+      }
+
+      let i = 0
+      async function getCompletions(paragraph, replacement) {
+        try {
+          const response = await fetch(import.meta.env.VITE_APP_OPENAI_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_APP_OPENAI_KEY}`
+            },
+            body: JSON.stringify({
+              ...OPENAI_PROMPT,
+              messages: [
+                ...OPENAI_PROMPT.messages,
+                {
+                  role: "user",
+                  content: `Full Paragraph: ${paragraph}
+                  Replace: ${replacement} 
+                  `
+                }
+              ]
+            }),
+          });
+
+          const result = await response.json(); // Parse the JSON response
+
+          return result.choices?.[0]?.message?.content || "Hello" + i
+        } catch (error) {
+          console.error('Error:', error);
+          return "Hello" + i
+        } finally {
+          i++
+        }
+      }
+
+      function waitFor(time = 0) {
+        return new Promise((r) => setTimeout(r, time))
+      }
+      
+      const SelectionState = {
+        INITIAL: 1,
+        SELECTED: 2,
+        OPENMENU: 3,
+      }
+
+      new Vue({
+        el: '#app',
+        template: '#replace-app',
+        setup() {
+          const inputRef = ref()
+          const textareaRef = ref()
+
+          const tooltipRef = ref()
+          const popoverRef = ref()
+          
+          const logs = ref([])
+          
+          const status = ref(SelectionState.INITIAL)
+          const message = ref('Hello vue!')
+          const activeName = ref()
+
+          const wait = false
+
+          let currentSelectedElement
+          let currentSelection
+          let currentSelectionRect
+
+          function setCurrentSelection(el, sel, rect) {
+            currentSelectedElement = el
+            currentSelection = sel
+            currentSelectionRect = rect
+          }
+
+          function allowShowingTooltip() {
+            return currentSelection.text.split(/\s+/).filter(Boolean).length > 1
+          }
+
+          function handleRemove() {
+            removeSelectionContent(currentSelectedElement, {
+              start: currentSelection.start,
+              end: currentSelection.end,
+            })
+          }
+
+          let i = 0
+          async function handleReplace() {
+            replaceSelectionContent(currentSelectedElement, {
+              content: await getCompletions(currentSelectedElement.value || currentSelectedElement.innerHTML, currentSelection.text),
+              start: currentSelection.start,
+              end: currentSelection.end,
+            })
+            i++
+          }
+          
+          function handleBlurOut() {
+            removeSelection(currentSelectedElement)
+          }
+
+          function handleCollapse() {
+            collapseToEnd()
+          }
+          
+          function handleOpenMenu() {
+            status.value = SelectionState.OPENMENU
+          }
+          
+          function handleClose() {
+            status.value = SelectionState.INITIAL
+          }
+
+          onMounted(async () => {
+            document.addEventListener('mousemove', (e) => {
+              const mousePos = getMousePos()
+
+              document.getElementById('x').innerText = mousePos.x
+              document.getElementById('y').innerText = mousePos.y
+
+              document.getElementById('target').innerText =
+                e.target.id || e.target.tagName
+
+              document.getElementById('scrollLeft').innerText = e.target.scrollLeft
+              document.getElementById('scrollTop').innerText = e.target.scrollTop
+              document.getElementById('scrollWidth').innerText = e.target.scrollWidth
+              document.getElementById('scrollHeight').innerText =
+                e.target.scrollHeight
+            })
+
+            const input$ = document.querySelector('#input')
+            const textarea$ = document.querySelector('#textarea')
+            const contenteditable$ = document.querySelector('#contenteditable')
+
+            ;[
+              inputRef.value.$el.querySelector('input'),
+              textareaRef.value.$el.querySelector('textarea'),
+              input$,
+              textarea$,
+              contenteditable$
+            ].forEach((element) => {
+              watchSelection(element, (selection, selectionRect) => {
+                if (!selection.text)
+                  status.value = SelectionState.INITIAL
+                setCurrentSelection(element, selection, selectionRect)
+
+                logs.value.push({
+                  selection,
+                  selectionRect
+                })
+  
+                const virtualElement = {
+                  getBoundingClientRect: () => {
+                    const { rect } = selectionRect
+
+                    return rect || new DOMRect()
+                  },
+                  getClientRects: () => {
+                    const { children } = selectionRect
+
+                    return children.length ? [children[children.length - 1]] : []
+                  }
+                }
+  
+                if (status.value !== SelectionState.OPENMENU && allowShowingTooltip())
+                  status.value = SelectionState.SELECTED
+  
+                attachFloating(virtualElement, tooltipRef.value)
+                attachFloating(virtualElement, popoverRef.value, {
+                  placement: 'bottom'
+                })
+                setHighlight(element, selectionRect.children)
+              }, {
+                keepInBound: [tooltipRef.value, popoverRef.value],
+                onBlur() {
+                  status.value = SelectionState.INITIAL
+                }
+              })
+            })
+          })
+
+          return {
+            activeName,
+            logs,
+            inputRef,
+            textareaRef,
+            tooltipRef,
+            popoverRef,
+            message,
+            status,
+            handleOpenMenu,
+            handleClose,
+            handleRemove,
+            handleReplace,
+            handleBlurOut,
+            handleCollapse
+          }
+        }
+      })
+    </script>
+  </body>
+</html>

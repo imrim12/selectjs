@@ -34,7 +34,6 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
         && !isMouseInElement(element, { border: _options.boundBorder })
         && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
       )
-      || isEffectDisabled()
     ) {
       _options.onBlur?.(e)
 
