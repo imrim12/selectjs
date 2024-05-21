@@ -1,4 +1,3 @@
-import { disableEffect, enableEffect } from './effect'
 import { isInputOrTextarea } from './utils'
 
 interface RemoveSelectionContentOptions {
@@ -7,15 +6,11 @@ interface RemoveSelectionContentOptions {
 }
 
 export function removeSelection(element: HTMLElement) {
-  disableEffect()
-
   element.blur()
 
   const selection = window.getSelection()
 
   selection?.removeAllRanges()
-
-  enableEffect()
 }
 
 export function removeSelectionContent(element: HTMLElement, options: RemoveSelectionContentOptions) {

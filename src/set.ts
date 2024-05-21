@@ -1,27 +1,27 @@
 import defu from 'defu'
 
 import { isInputOrTextarea } from './utils'
-import { defineSelectable } from './define'
-import { disableEffect } from './effect'
+import { defineSelectable, getProp } from './define'
 
 export interface SetSelectionOptions {
   start: number
   end: number
   direction?: 'forward' | 'backward' | 'none'
-  noEffect?: boolean
 }
 
 export function setSelectionInputOrTextareaElement(element: HTMLInputElement | HTMLTextAreaElement, options?: SetSelectionOptions) {
   const _options = defu(options, {})
 
-  if (_options.noEffect)
-    disableEffect()
+  const disabled = getProp(element, 'disabled')
+
+  if (disabled === 'true')
+    return ''
 
   const _element = defineSelectable(element)
 
   _element.focus()
 
-  _element.setSelectionRange(_options.start, _options.end, _options.direction || 'none')
+  _element.setSelectionRange(_options.start, _options.end, _options.direction || 'forward')
 
   return _element.value.slice(_options.start, _options.end)
 }
@@ -33,21 +33,26 @@ interface SetSelectionNodeOptions {
     endNode: Node | null
     endOffset: number
   }
-  noEffect?: boolean
 }
 
-export function setSelectionNode(options?: SetSelectionNodeOptions) {
+export function setSelectionNode(element: HTMLElement, options?: SetSelectionNodeOptions) {
   const _options = defu(options, {})
 
-  if (_options.noEffect)
-    disableEffect()
+  const disabled = getProp(element, 'disabled')
+
+  if (disabled === 'true')
+    return ''
 
   const selection = window.getSelection()
   const range = document.createRange()
 
   if (_options.nativeSelection.startNode && _options.nativeSelection.endNode) {
-    range.setStart(_options.nativeSelection.startNode, _options.nativeSelection.startOffset)
-    range.setEnd(_options.nativeSelection.endNode, _options.nativeSelection.endOffset)
+    const { startNode, startOffset, endNode, endOffset } = _options.nativeSelection
+
+    const [sortedStartNode, sortedStartOffset, sortedEndNode, sortedEndOffset] = compareAndSortNodes(startNode, startOffset, endNode, endOffset)
+
+    range.setStart(sortedStartNode, sortedStartOffset)
+    range.setEnd(sortedEndNode, sortedEndOffset)
 
     selection?.removeAllRanges()
     selection?.addRange(range)
@@ -57,11 +62,29 @@ export function setSelectionNode(options?: SetSelectionNodeOptions) {
   return ''
 }
 
+function compareAndSortNodes(startNode: Node, startOffset: number, endNode: Node, endOffset: number): [Node, number, Node, number] {
+  if (startNode === endNode) {
+    if (startOffset > endOffset)
+      return [endNode, endOffset, startNode, startOffset]
+  }
+  else {
+    const compareResult = startNode.compareDocumentPosition(endNode)
+    if (compareResult & Node.DOCUMENT_POSITION_FOLLOWING)
+      return [startNode, startOffset, endNode, endOffset]
+    else if (compareResult & Node.DOCUMENT_POSITION_PRECEDING)
+      return [endNode, endOffset, startNode, startOffset]
+  }
+
+  return [startNode, startOffset, endNode, endOffset]
+}
+
 export function setSelectionContenteditableElement(element: HTMLElement, options?: SetSelectionOptions) {
   const _options = defu(options, {})
 
-  if (_options.noEffect)
-    disableEffect()
+  const disabled = getProp(element, 'disabled')
+
+  if (disabled === 'true')
+    return ''
 
   const _element = defineSelectable(element)
 
@@ -113,6 +136,11 @@ export function setSelectionContenteditableElement(element: HTMLElement, options
 export function setSelection(element: HTMLElement, options: SetSelectionOptions) {
   const _options = defu(options, {})
 
+  const disabled = getProp(element, 'disabled')
+
+  if (disabled === 'true')
+    return
+
   const _element = defineSelectable(element)
 
   let selectedText = ''
@@ -122,10 +150,10 @@ export function setSelection(element: HTMLElement, options: SetSelectionOptions)
   if (isInputOrTextarea(_element)) {
     selectedText = setSelectionInputOrTextareaElement(
       _element as HTMLInputElement | HTMLTextAreaElement,
-      { start: _options.start, end: _options.end, direction: _options.direction, noEffect: _options.noEffect },
+      { start: _options.start, end: _options.end, direction: _options.direction },
     )
   }
-  else { selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end, noEffect: _options.noEffect }) }
+  else { selectedText = setSelectionContenteditableElement(_element, { start: _options.start, end: _options.end }) }
 
   return selectedText
 }

@@ -1,17 +1,18 @@
 import defu from 'defu'
-import { defineSelectable } from './define'
+import type { Arrayable } from '.'
+import type { Promisable } from 'type-fest'
+import { defineSelectable, getProp, setProp } from './define'
 import { getSelection, getSelectionRect } from './get'
 import type { GetSelectionRectResult, GetSelectionResult } from './get'
 import { keepSelection } from './keep'
 import { debounce, isInputOrTextarea } from './utils'
-import { enableEffect, isEffectDisabled } from './effect'
-import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './pointer/mouse'
-import type { Arrayable } from '.'
+import { checkIfMouseIsInBound, watchMouseMovement } from './pointer/mouse'
 
 export interface WatchSelectionOptions {
   keepInBound?: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
   boundBorder?: number
   debounce?: number
+  beforeBlur?: (() => Promisable<boolean>)
   onBlur?: (e: FocusEvent) => void
 }
 
@@ -25,14 +26,21 @@ export function watchSelection(
     boundBorder: 0,
   })
 
-  const _element = defineSelectable(element)
-
-  watchMouseMovement()
+  let _element = element
 
   let lastSelectedText = ''
+
   function handleSelectionChange() {
+    const disabled = getProp(element, 'disabled')
+    if (disabled === 'true')
+      return
+
     const nativeSelection = window.getSelection()
-    const range = nativeSelection?.getRangeAt(0)
+
+    if (!nativeSelection || !nativeSelection?.rangeCount)
+      return
+
+    const range = nativeSelection.getRangeAt(0)
 
     // Prevent event running if the selection is not in the current element (selectionchange is listened on all document!)
     if (!isInputOrTextarea(_element) && !_element.contains(range!.commonAncestorContainer))
@@ -40,17 +48,11 @@ export function watchSelection(
 
     if (
       _options.keepInBound
-      && !isMouseInElement(element, { border: _options.boundBorder })
+      && !checkIfMouseIsInBound([_element], _options.boundBorder)
       && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
       && !_options.debounce
     )
       return
-
-    if (isEffectDisabled()) {
-      enableEffect()
-
-      return
-    }
 
     const selection = getSelection(_element)
 
@@ -65,12 +67,21 @@ export function watchSelection(
   }
   const debouncedHandleSelectionChange = _options.debounce ? debounce(handleSelectionChange, _options.debounce) : handleSelectionChange
 
-  document.addEventListener('selectionchange', debouncedHandleSelectionChange)
+  if (!getProp(element, 'watch')) {
+    watchMouseMovement()
+
+    _element = defineSelectable(element)
+
+    setProp(_element, 'watch', 'true')
+
+    document.addEventListener('selectionchange', debouncedHandleSelectionChange)
+  }
 
   let stopKeeping: null | (() => void) = null
   if (_options.keepInBound) {
     stopKeeping = keepSelection(_element, {
       keepInBound: _options.keepInBound,
+      beforeBlur: _options.beforeBlur,
       onBlur: _options.onBlur,
     }).stop
   }

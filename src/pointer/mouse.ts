@@ -51,6 +51,12 @@ export function isMouseInElement(element: HTMLElement, options?: IsMouseInBoundO
   )
 }
 
+export function isClickInElement(event: PointerEvent, element: HTMLElement) {
+  const target = event.target as HTMLElement
+
+  return event.composedPath().includes(element) || target === element
+}
+
 export function checkIfMouseIsInBound(bounds: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>), border?: number) {
   if (typeof bounds === 'function') {
     const _bounds = bounds()

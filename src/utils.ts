@@ -16,15 +16,19 @@ export function isInputOrTextarea(element: HTMLElement) {
   return isInput(element) || isTextarea(element)
 }
 
-export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaration> = {}) {
+export function shadowInput(el: HTMLInputElement | HTMLTextAreaElement, style: Partial<CSSStyleDeclaration> = {}) {
   const elRect = el.getBoundingClientRect()
 
   const newEl = document.createElement('div')
 
-  if (isInputOrTextarea(el))
-    newEl.innerHTML = (el as HTMLInputElement | HTMLTextAreaElement).value
-  else
-    newEl.innerHTML = el.innerHTML
+  const start = el.selectionStart || 0
+  const end = el.selectionEnd || 0
+
+  newEl.appendChild(document.createTextNode(el.value.slice(0, start)))
+  const highlightEl = document.createElement('span')
+  highlightEl.innerHTML = el.value.slice(start, end)
+
+  newEl.appendChild(highlightEl)
 
   const elComputedStyles = window.getComputedStyle(el)
 
@@ -33,14 +37,22 @@ export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaratio
     'paddingRight',
     'paddingBottom',
     'paddingLeft',
+    'paddingBlock',
+    'paddingInline',
     'marginTop',
     'marginRight',
     'marginBottom',
     'marginLeft',
+    'borderWidth',
     'borderTop',
     'borderRight',
     'borderBottom',
     'borderLeft',
+    'borderTopWidth',
+    'borderRightWidth',
+    'borderBottomWidth',
+    'borderLeftWidth',
+    'borderImageWidth',
     'fontFamily',
     'fontSize',
     'lineHeight',
@@ -51,23 +63,34 @@ export function shadowElement(el: HTMLElement, style: Partial<CSSStyleDeclaratio
     })
   }
 
+  const actualInnerHeight = elRect.height - (Number.parseFloat(elComputedStyles.borderTop) + Number.parseFloat(elComputedStyles.borderBottom))
+
   newEl.style.boxSizing = 'border-box'
   newEl.style.visibility = 'hidden'
-  // newEl.style.backgroundColor = 'transparent'
-  // newEl.style.color = 'transparent'
-  // newEl.style.opacity = '0'
-
   newEl.style.position = 'fixed'
   newEl.style.top = `${elRect.top}px`
   newEl.style.left = `${elRect.left}px`
-  newEl.style.width = `${elRect.width}px`
-  newEl.style.height = `${elRect.height}px`
+  newEl.style.width = `${el.clientWidth}px`
+  newEl.style.height = `${el.clientHeight}px`
   newEl.style.zIndex = '100000'
   newEl.style.pointerEvents = 'none'
+  newEl.style.backgroundColor = 'rgba(0, 0, 0, 0.4)'
+  newEl.style.color = 'white'
+
+  if (isTextarea(el)) {
+    newEl.style.whiteSpace = 'pre-wrap'
+  }
+  else if (isInput(el)) {
+    newEl.style.whiteSpace = 'nowrap'
+    newEl.style.lineHeight = `${actualInnerHeight}px`
+  }
 
   Object.assign(newEl.style, style)
 
-  return newEl
+  return {
+    shadowEl: newEl,
+    highlightEl,
+  }
 }
 
 export function debounce(fn: Function, time = 0) {

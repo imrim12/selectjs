@@ -24,7 +24,7 @@ export interface SetHighlightOptions {
 export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetHighlightOptions) {
   const _options = defu(options, {
     stroke: 2,
-    color: '#6EF910',
+    color: '#25C9D0',
     blendMode: 'normal',
     container: element.parentElement || document,
     position: 'absolute' as const,
@@ -33,12 +33,17 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
     duration: 300,
     interactive: false,
   })
+  const disabled = getProp(element, 'disabled')
+
+  if (disabled === 'true')
+    return
+
   const selectableId = getProp(element, 'id')
 
   if (!selectableId)
     return
 
-  const existingHighlight = document.querySelectorAll(`[data-selectable-highlight-for="${selectableId}"]`)
+  const existingHighlight = document.querySelectorAll(`[data-g-h-for="${selectableId}"]`)
   existingHighlight.forEach(e => e.remove())
 
   const highlights: HTMLDivElement[] = []
@@ -50,8 +55,8 @@ export function setHighlight(element: HTMLElement, rects: Rect[], options?: SetH
   for (const rect of rects) {
     const div = document.createElement('div')
 
-    div.setAttribute('data-selectable-highlight-for', selectableId)
-    div.setAttribute('data-selectable-highlight-id', i.toString())
+    div.setAttribute('data-g-h-for', selectableId)
+    div.setAttribute('data-g-h-id', i.toString())
 
     div.style.top = `${rect.top + (_options.stroke === 'full' ? 0 : rect.height) + _options.offsetY + scrollY}px`
     div.style.left = `${rect.left + _options.offsetX + scrollX}px`

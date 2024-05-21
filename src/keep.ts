@@ -1,15 +1,18 @@
 import defu from 'defu'
 
+import type { Arrayable } from '.'
+import type { Promisable } from 'type-fest'
+import type { GetNativeSelectionResult, GetSelectionResult } from './get'
 import { getNativeSelection, getSelection } from './get'
 import { setSelection, setSelectionNode } from './set'
 import { isInputOrTextarea } from './utils'
-import { checkIfMouseIsInBound, isMouseInElement, watchMouseMovement } from './pointer/mouse'
-import { isEffectDisabled } from './effect'
-import type { Arrayable } from '.'
+import { checkIfMouseIsInBound, watchMouseMovement } from './pointer/mouse'
+import { getProp, removeProp, setProp } from './define'
 
 export interface KeepSelectionOptions {
   keepInBound?: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
   boundBorder?: number
+  beforeBlur?: (() => Promisable<boolean>)
   onBlur?: ((e: FocusEvent) => void)
 }
 
@@ -24,28 +27,18 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
 
   watchMouseMovement()
 
-  function reselectElement(e: FocusEvent) {
-    const currentSelection = getSelection(element)
-
-    if (
-      !currentSelection.text
-      || (
-        _options.keepInBound
-        && !isMouseInElement(element, { border: _options.boundBorder })
-        && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
-      )
-      || isEffectDisabled()
-    ) {
-      _options.onBlur?.(e)
-
-      return
-    }
+  // /fix the function handleBlur is called when the blur event happens, but the console.log('hello') is unreachable in the 2nd blur when the previous _options.beforeBlur() hasn't been resolved, i have added hasUnresolvedPromise to skip executing _options.beforeBlur() in the 2nd time but it doesn't work
+  function reselectElement(currentSelection: GetSelectionResult | GetNativeSelectionResult) {
+    const scrollTop = element.scrollTop
+    const scrollLeft = element.scrollLeft
 
     if (isInputOrTextarea(element)) {
+      const selection = currentSelection as GetSelectionResult
+
       setSelection(element, {
-        start: currentSelection.start,
-        end: currentSelection.end,
-        noEffect: true,
+        start: selection.start,
+        end: selection.end,
+        direction: selection.direction || 'forward',
       })
     }
     else {
@@ -58,19 +51,84 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
       // If you select Hello World, you probably select the text node inside the <b> tag ("Hello")
       // and the text node outside the <b> tag (" World")
       // you must set the range position to the correct node in order for it to work correctly
-      const currentNativeSelection = getNativeSelection()
-
-      setSelectionNode({
-        nativeSelection: currentNativeSelection,
-        noEffect: true,
+      setSelectionNode(element, {
+        nativeSelection: currentSelection as GetNativeSelectionResult,
       })
+    }
+
+    element.scrollTop = scrollTop
+    element.scrollLeft = scrollLeft
+  }
+
+  let isPasting = false
+  async function handleBlur(e: FocusEvent) {
+    const disabled = getProp(element, 'disabled')
+
+    if (isPasting) {
+      isPasting = false
+      return
+    }
+
+    if (disabled === 'true')
+      return _options.onBlur?.(e)
+
+    const currentSelection = getSelection(element)
+    const currentNativeSelection = getNativeSelection()
+
+    if (!currentSelection.text)
+      return _options.onBlur?.(e)
+
+    const isMouseInBound = (
+      _options.keepInBound
+      && (
+        checkIfMouseIsInBound([element], _options.boundBorder)
+        || checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
+      )
+    )
+
+    const selection = isInputOrTextarea(element) ? currentSelection : currentNativeSelection
+
+    if (isMouseInBound) {
+      reselectElement(selection)
+    }
+    else if (_options.beforeBlur && typeof _options.beforeBlur === 'function') {
+      const blurPending = getProp(element, 'pending')
+
+      if (blurPending) {
+        reselectElement(selection)
+      }
+      else {
+        setProp(element, 'pending', 'true')
+
+        const doBlur = await _options.beforeBlur()
+
+        removeProp(element, 'pending')
+
+        if (doBlur)
+          _options.onBlur?.(e)
+        else
+          reselectElement(selection)
+      }
+    }
+    else {
+      _options.onBlur?.(e)
     }
   }
 
-  element.addEventListener('blur', reselectElement)
+  const keepEnable = getProp(element, 'keep')
+
+  if (!keepEnable) {
+    setProp(element, 'keep', '1')
+
+    element.addEventListener('blur', handleBlur)
+
+    element.addEventListener('paste', () => {
+      isPasting = true
+    })
+  }
 
   function removeKeepListener() {
-    element.removeEventListener('blur', reselectElement)
+    element.removeEventListener('blur', handleBlur)
   }
 
   return {

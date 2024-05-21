@@ -1,3 +1,4 @@
+import { getProp } from './define'
 import { getNativeSelection } from './get'
 import { setSelection, setSelectionNode } from './set'
 import { isInputOrTextarea } from './utils'
@@ -9,6 +10,11 @@ interface ReplaceSelectionContentOptions {
 }
 
 export function replaceSelectionContent(element: HTMLElement, options: ReplaceSelectionContentOptions) {
+  const disabled = getProp(element, 'disabled')
+
+  if (disabled === 'true')
+    return
+
   if (isInputOrTextarea(element)) {
     const _inputOrTextarea = element as HTMLInputElement | HTMLTextAreaElement
     const textBefore = _inputOrTextarea.value.substring(0, options.start || 0)
@@ -22,7 +28,7 @@ export function replaceSelectionContent(element: HTMLElement, options: ReplaceSe
     setSelection(_inputOrTextarea, {
       start: textBefore.length,
       end: textBefore.length + options.content.length,
-      // noEffect: true,
+      direction: 'forward',
     })
   }
   else {
@@ -51,9 +57,8 @@ export function replaceSelectionContent(element: HTMLElement, options: ReplaceSe
     element.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true }))
 
     const currentNativeSelection = getNativeSelection()
-    setSelectionNode({
+    setSelectionNode(element, {
       nativeSelection: currentNativeSelection,
-      noEffect: true,
     })
 
     return range

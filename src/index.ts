@@ -2,8 +2,6 @@ export * from './collapse'
 
 export * from './define'
 
-export * from './effect'
-
 export * from './floating'
 
 export * from './get'
