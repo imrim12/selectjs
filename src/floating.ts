@@ -1,6 +1,6 @@
 import defu from 'defu'
 import type { FlipOptions, HideOptions, InlineOptions, OffsetOptions, Placement, ShiftOptions, Strategy, VirtualElement } from '@floating-ui/dom'
-import { computePosition, flip, hide, inline, offset, shift } from '@floating-ui/dom'
+import { computePosition, flip, inline, offset, shift } from '@floating-ui/dom'
 
 export interface FloatingOptions {
   placement?: Placement
@@ -29,9 +29,6 @@ function calculateZIndex(el: VirtualElement) {
 
 export async function attachFloating(virtualElement: VirtualElement, tooltipElement: HTMLElement, options?: FloatingOptions) {
   const _options = defu(options, {
-    hide: {
-      padding: 24,
-    },
     offset: {
       mainAxis: 4,
     },
@@ -39,11 +36,10 @@ export async function attachFloating(virtualElement: VirtualElement, tooltipElem
 
   const zIndex = calculateZIndex(virtualElement)
 
-  const { x, y, strategy, middlewareData } = await computePosition(virtualElement, tooltipElement, {
+  const { x, y, strategy } = await computePosition(virtualElement, tooltipElement, {
     placement: _options.placement || 'right-end',
     strategy: _options.strategy || 'fixed',
     middleware: [
-      hide(_options.hide),
       inline(_options.inline),
       flip(_options.flip),
       shift(_options.shift),
@@ -58,9 +54,6 @@ export async function attachFloating(virtualElement: VirtualElement, tooltipElem
   tooltipElement.style.position = strategy
   tooltipElement.style.left = `${x}px`
   tooltipElement.style.top = `${y}px`
-  tooltipElement.style.visibility = middlewareData.hide?.referenceHidden
-    ? 'hidden'
-    : 'visible'
 }
 
 export function isElementOverflowFromTargetViewport(element: HTMLElement, target: HTMLElement) {

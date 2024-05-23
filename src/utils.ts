@@ -1,4 +1,4 @@
-import type { Rect } from '.'
+import type { Arrayable, Rect } from '.'
 
 export function isInput(element: HTMLElement) {
   return element.tagName === 'INPUT'
@@ -140,4 +140,19 @@ export function clampRect(rect: Rect, bound: Rect) {
   }
 
   return result
+}
+
+export function checkIfElementIsInBound(target: HTMLElement, bounds: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)) {
+  if (typeof bounds === 'function') {
+    const _bounds = bounds()
+
+    return Array.isArray(_bounds)
+      ? _bounds.includes(target)
+      : _bounds === target
+  }
+  else {
+    return Array.isArray(bounds)
+      ? bounds.includes(target)
+      : bounds === target
+  }
 }

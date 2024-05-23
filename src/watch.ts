@@ -1,17 +1,17 @@
 import defu from 'defu'
-import type { Arrayable } from '.'
 import type { Promisable } from 'type-fest'
 import { defineSelectable, getProp, setProp } from './define'
 import { getSelection, getSelectionRect } from './get'
 import type { GetSelectionRectResult, GetSelectionResult } from './get'
 import { keepSelection } from './keep'
 import { debounce, isInputOrTextarea } from './utils'
-import { checkIfMouseIsInBound, watchMouseMovement } from './pointer/mouse'
+import type { Arrayable } from '.'
 
 export interface WatchSelectionOptions {
   keepInBound?: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
   boundBorder?: number
   debounce?: number
+  getCurrentElement?: (() => HTMLElement | null | undefined)
   beforeBlur?: (() => Promisable<boolean>)
   onBlur?: (e: FocusEvent) => void
 }
@@ -46,14 +46,6 @@ export function watchSelection(
     if (!isInputOrTextarea(_element) && !_element.contains(range!.commonAncestorContainer))
       return
 
-    if (
-      _options.keepInBound
-      && !checkIfMouseIsInBound([_element], _options.boundBorder)
-      && !checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
-      && !_options.debounce
-    )
-      return
-
     const selection = getSelection(_element)
 
     if (selection.text === lastSelectedText)
@@ -68,8 +60,6 @@ export function watchSelection(
   const debouncedHandleSelectionChange = _options.debounce ? debounce(handleSelectionChange, _options.debounce) : handleSelectionChange
 
   if (!getProp(element, 'watch')) {
-    watchMouseMovement()
-
     _element = defineSelectable(element)
 
     setProp(_element, 'watch', 'true')
@@ -80,6 +70,7 @@ export function watchSelection(
   let stopKeeping: null | (() => void) = null
   if (_options.keepInBound) {
     stopKeeping = keepSelection(_element, {
+      getCurrentElement: _options.getCurrentElement,
       keepInBound: _options.keepInBound,
       beforeBlur: _options.beforeBlur,
       onBlur: _options.onBlur,

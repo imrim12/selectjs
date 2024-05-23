@@ -1,17 +1,17 @@
 import defu from 'defu'
 
-import type { Arrayable } from '.'
 import type { Promisable } from 'type-fest'
 import type { GetNativeSelectionResult, GetSelectionResult } from './get'
 import { getNativeSelection, getSelection } from './get'
 import { setSelection, setSelectionNode } from './set'
-import { isInputOrTextarea } from './utils'
-import { checkIfMouseIsInBound, watchMouseMovement } from './pointer/mouse'
+import { checkIfElementIsInBound, isInputOrTextarea } from './utils'
 import { getProp, removeProp, setProp } from './define'
+import type { Arrayable } from '.'
 
 export interface KeepSelectionOptions {
-  keepInBound?: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
+  keepInBound: Arrayable<HTMLElement> | (() => Arrayable<HTMLElement>)
   boundBorder?: number
+  getCurrentElement?: (() => HTMLElement | null | undefined)
   beforeBlur?: (() => Promisable<boolean>)
   onBlur?: ((e: FocusEvent) => void)
 }
@@ -24,8 +24,6 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
   const _options = defu(options, {
     boundBorder: 0,
   })
-
-  watchMouseMovement()
 
   // /fix the function handleBlur is called when the blur event happens, but the console.log('hello') is unreachable in the 2nd blur when the previous _options.beforeBlur() hasn't been resolved, i have added hasUnresolvedPromise to skip executing _options.beforeBlur() in the 2nd time but it doesn't work
   function reselectElement(currentSelection: GetSelectionResult | GetNativeSelectionResult) {
@@ -60,14 +58,14 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
     element.scrollLeft = scrollLeft
   }
 
-  let isPasting = false
   async function handleBlur(e: FocusEvent) {
     const disabled = getProp(element, 'disabled')
 
-    if (isPasting) {
-      isPasting = false
+    if (e.relatedTarget instanceof HTMLElement && e.relatedTarget.classList.contains('ql-clipboard'))
       return
-    }
+
+    if (e.target !== options?.getCurrentElement?.())
+      return
 
     if (disabled === 'true')
       return _options.onBlur?.(e)
@@ -78,13 +76,9 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
     if (!currentSelection.text)
       return _options.onBlur?.(e)
 
-    const isMouseInBound = (
-      _options.keepInBound
-      && (
-        checkIfMouseIsInBound([element], _options.boundBorder)
-        || checkIfMouseIsInBound(_options.keepInBound, _options.boundBorder)
-      )
-    )
+    const isMouseInBound = e.relatedTarget
+      ? checkIfElementIsInBound(e.relatedTarget as HTMLElement, _options.keepInBound)
+      : false
 
     const selection = isInputOrTextarea(element) ? currentSelection : currentNativeSelection
 
@@ -121,10 +115,6 @@ export function keepSelection(element: HTMLElement, options?: KeepSelectionOptio
     setProp(element, 'keep', '1')
 
     element.addEventListener('blur', handleBlur)
-
-    element.addEventListener('paste', () => {
-      isPasting = true
-    })
   }
 
   function removeKeepListener() {
